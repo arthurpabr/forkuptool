@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR" >
+<head>
+    <title>
+        {% block title %}{{title}}{% endblock %}
+    </title>
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/base.css">
+
+    <style type="text/css">
+    /*
+    django-admin-interface 0.12.2
+    https://github.com/fabiocaccamo/django-admin-interface
+    */
+    .admin-interface #header {
+        background: #0C4B33;
+        color: #44B78B;
+    }
+
+    .admin-interface .environment-label {
+    }
+
+    .admin-interface .environment-label::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #E74C3C;
+        border-radius: 100%;
+        margin-right: 6px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+    }
+
+    .admin-interface .environment-label::after {
+        content: "Forkuptool";
+    }
+
+    .admin-interface .language-chooser {
+        display: inline-block;
+        float: right;
+        margin-left: 20px;
+    }
+
+    .admin-interface .language-chooser-hidden-form {
+        display: none;
+    }
+
+    .admin-interface .language-chooser-select-form {
+        display: inline-block;
+    }
+
+    .admin-interface #branding h1 {
+        color: #F5DD5D;
+    }
+
+    .admin-interface #user-tools br {
+        display: none;
+    }
+    @media (max-width: 768px){
+        .admin-interface #user-tools br {
+            display: block;
+        }
+    }
+
+    .admin-interface #header #user-tools a {
+        color:#FFFFFF;
+    }
+
+    .admin-interface #header #user-tools a:hover,
+    .admin-interface #header #user-tools a:active {
+        color:#C9F0DD;
+        border-bottom-color:rgba(255, 255, 255, 0.5);
+    }
+
+    .admin-interface .module h2,
+    .admin-interface .module caption,
+    .admin-interface .module.filtered h2 {
+        background:#44B78B;
+        color:#FFFFFF;
+    }
+
+    .admin-interface .module a.section:link,
+    .admin-interface .module a.section:visited {
+        color:#FFFFFF;
+    }
+
+    .admin-interface .module a.section:active,
+    .admin-interface .module a.section:hover {
+        color:#C9F0DD;
+    }
+
+    .admin-interface div.breadcrumbs {
+        background:#44B78B;
+        color:#FFFFFF;
+    }
+
+    .admin-interface div.breadcrumbs a {
+        color:#FFFFFF;
+    }
+
+    .admin-interface div.breadcrumbs a:active,
+    .admin-interface div.breadcrumbs a:focus,
+    .admin-interface div.breadcrumbs a:hover {
+        color:#C9F0DD;
+    }
+
+    .admin-interface fieldset.collapse.collapsed a.collapse-toggle {
+        color:#FFFFFF;
+    }
+
+    .admin-interface fieldset.collapse.collapsed a.collapse-toggle:hover,
+    .admin-interface fieldset.collapse.collapsed a.collapse-toggle:active {
+        color:#C9F0DD;
+    }
+
+    .admin-interface fieldset.collapse a.collapse-toggle {
+        color:#FFFFFF;
+    }
+
+    .admin-interface fieldset.collapse a.collapse-toggle:hover,
+    .admin-interface fieldset.collapse a.collapse-toggle:active {
+        color:#C9F0DD;
+    }
+
+    .admin-interface .inline-group h2 {
+        background:#44B78B;
+        color:#FFFFFF;
+    }
+
+    .admin-interface .selector .selector-chosen h2 {
+        border-color:#44B78B;
+        background:#44B78B;
+        color:#FFFFFF;
+    }
+
+    .admin-interface .selector .selector-available h2,
+    .admin-interface .selector .selector-chosen h2 {
+        
+        border-bottom-left-radius:0;
+        border-bottom-right-radius:0;
+        
+    }
+
+    .admin-interface .selector a.selector-chooseall:focus,
+    .admin-interface .selector a.selector-chooseall:hover,
+    .admin-interface .selector a.selector-clearall:focus,
+    .admin-interface .selector a.selector-clearall:hover {
+        color:#156641;
+    }
+
+    .admin-interface a:link,
+    .admin-interface a:visited {
+        color:#0C3C26;
+    }
+
+    .admin-interface a:hover {
+        color:#156641;
+    }
+
+    .admin-interface .button,
+    .admin-interface input[type=submit],
+    .admin-interface input[type=button],
+    .admin-interface .submit-row input,
+    .admin-interface a.button {
+        background:#0C4B33;
+        color:#FFFFFF;
+    }
+
+    .admin-interface .button:active,
+    .admin-interface .button:focus,
+    .admin-interface .button:hover,
+    .admin-interface input[type=submit]:active,
+    .admin-interface input[type=submit]:focus,
+    .admin-interface input[type=submit]:hover,
+    .admin-interface input[type=button]:active,
+    .admin-interface input[type=button]:focus,
+    .admin-interface input[type=button]:hover {
+        background:#0C3C26;
+        color:#FFFFFF;
+        outline: none;
+    }
+
+    .admin-interface .button.default,
+    .admin-interface input[type=submit].default,
+    .admin-interface .submit-row input.default {
+        background:#0C4B33;
+        color:#FFFFFF;
+        outline: none;
+    }
+
+    .admin-interface .button.default:active,
+    .admin-interface .button.default:focus,
+    .admin-interface .button.default:hover,
+    .admin-interface input[type=submit].default:active,
+    .admin-interface input[type=submit].default:focus,
+    .admin-interface input[type=submit].default:hover {
+        background:#0C3C26;
+        color:#FFFFFF;
+        outline: none;
+    }
+
+    .admin-interface .submit-row a.deletelink:link,
+    .admin-interface .submit-row a.deletelink:visited {
+        background:#BA2121;
+        color:#FFFFFF;
+    }
+
+    .admin-interface .submit-row a.deletelink:hover {
+        background:#A41515;
+        color:#FFFFFF;
+    }
+
+    .admin-interface .paginator a,
+    .admin-interface .paginator a:link,
+    .admin-interface .paginator a:visited,
+    .admin-interface .paginator .this-page {
+        border-radius:4px;
+    }
+
+    .admin-interface .paginator a,
+    .admin-interface .paginator a:link,
+    .admin-interface .paginator a:visited {
+        background-color:#FFFFFF;
+        color:#0C3C26;
+    }
+
+    .admin-interface .paginator a:hover,
+    .admin-interface .paginator a:active {
+        background-color:#F8F8F8;
+        color:#156641;
+    }
+
+    .admin-interface .paginator .this-page {
+        background-color:#44B78B;
+        color:#FFFFFF;
+    }
+
+    .admin-interface .paginator a.showall,
+    .admin-interface .paginator a.showall:link,
+    .admin-interface .paginator a.showall:visited {
+        color:#0C3C26;
+    }
+
+    .admin-interface .paginator a.showall:hover,
+    .admin-interface .paginator a.showall:active {
+        color:#156641;
+    }
+
+    .admin-interface .module.filtered #changelist-filter li.selected a,
+    .admin-interface .module.filtered #changelist-filter li.selected a:hover {
+        color: #0C3C26;
+    }
+
+    /* begin fix issue #11 - Inline border bottom should not be rounded */
+    .admin-interface .module h2,
+    .admin-interface.dashboard .module caption,
+    .admin-interface .module.filtered h2 {
+        
+        border-radius:4px;
+        
+    }
+
+    .admin-interface .inline-group h2 {
+        
+        border-bottom-left-radius:0;
+        border-bottom-right-radius:0;
+        
+    }
+    /* end fix */
+
+    .admin-interface #content-related {
+        
+        border-radius:4px;
+        
+    }
+
+    .admin-interface .select2-container--admin-autocomplete .select2-results__option--highlighted[aria-selected] {
+        background-color: #0C4B33;
+    }
+
+    .admin-interface.login #container {
+        width:320px;
+        margin:90px auto;
+        box-sizing:border-box;
+        -moz-box-sizing:border-box;
+        -webkit-box-sizing:border-box;
+    }
+
+    .admin-interface.login #content {
+        padding:15px 30px 10px 30px;
+    }
+
+    @media (max-width:767px){
+
+        .admin-interface.login #container {
+            margin:0px auto;
+        }
+
+        .admin-interface.login #content {
+            padding:20px 30px 30px 30px;
+        }
+    }
+
+    .admin-interface.login #header {
+        padding:15px 30px 10px;
+        line-height:30px;
+    }
+
+    .admin-interface.login #branding h1 {
+        margin-right:0;
+    }
+
+    .admin-interface.login #branding h1 img.logo {
+        max-width:100%;
+        margin-right:0;
+    }
+
+    .admin-interface.login #header #branding h1 img.logo+span {
+        display:block;
+        margin-bottom: 5px;
+    }
+
+    .admin-interface.login .submit-row {
+        padding-left:0;
+        text-align:right;
+    }
+
+    @media (max-width:767px){
+        .admin-interface.login .submit-row label {
+            display:none;
+        }
+        .admin-interface.login .submit-row {
+            float: left;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+    }
+
+    .admin-interface #header {
+        height:auto;
+        min-height:40px;
+    }
+
+    .admin-interface #branding h1 img.logo {
+        max-height:100px;
+        margin-top:10px;
+        margin-bottom:10px;
+        margin-right:15px;
+        display:inline-block !important; /* override inline display:none; */
+    }
+
+    .admin-interface #branding h1 img.logo+span {
+        white-space:nowrap;
+    }
+
+    .admin-interface fieldset.collapse {
+        border: 1px solid transparent;
+    }
+
+    .admin-interface fieldset.collapse.collapsed a.collapse-toggle,
+    .admin-interface fieldset.collapse a.collapse-toggle {
+        font-weight: normal;
+        text-transform: lowercase;
+        font-size: 12px;
+        text-decoration: underline;
+        padding: 0 1px;
+    }
+
+    /*
+    #changelist table tbody tr.selected {
+        background-color:#FFFFCC;
+    }
+    */
+
+    .admin-interface #changelist .paginator {
+        margin-top:-1px; /* merge 2 borders into 1 */
+        line-height:42px;
+    }
+
+    .admin-interface .paginator a,
+    .admin-interface .paginator a:link,
+    .admin-interface .paginator a:visited,
+    .admin-interface .paginator .this-page {
+        padding:7px 12px;
+    }
+
+    .admin-interface .paginator a,
+    .admin-interface .paginator .this-page {
+        margin-left:0px;
+    }
+
+    .admin-interface .paginator .this-page,
+    .admin-interface .paginator a.end {
+        margin-right:25px;
+    }
+
+    .admin-interface .paginator .this-page + a:not(.showall)  {
+        margin-left:-25px;
+    }
+
+    body.admin-interface .paginator a.showall,
+    body.admin-interface .paginator a.showall:link,
+    body.admin-interface .paginator a.showall:visited {
+        margin-left:20px;
+    }
+
+    /* fix help text icon on newline */
+    .admin-interface .inline-group thead th {
+        white-space:nowrap;
+    }
+
+    .admin-interface .inline-group thead th img {
+        vertical-align: -2px;
+        margin-left: 5px;
+    }
+
+    .admin-interface .file-thumbnail > a {
+        display: inline-block;
+    }
+
+    .admin-interface .aligned p.file-upload {
+        display:table;
+    }
+
+    .admin-interface form .form-row p.file-upload > a {
+        margin-right:20px;
+    }
+
+    .admin-interface form .form-row p.file-upload .clearable-file-input {
+        display:inline-block;
+        margin-left:
+    }
+
+    .admin-interface form .form-row p.file-upload .clearable-file-input label {
+        padding-bottom:0px;
+        margin-left:2px;
+    }
+
+    .admin-interface form .form-row p.file-upload > input[type="file"] {
+        margin-top: 0px;
+    }
+
+    @media (max-width:767px){
+
+        .admin-interface form .form-row p.file-upload {
+            width: 100%;
+        }
+
+        .admin-interface form .form-row p.file-upload > a {
+            margin-right:0px;
+            display: block;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .admin-interface form .form-row p.file-upload .clearable-file-input {
+            display: block;
+            margin-top: 10px;
+            margin-bottom: -10px;
+        }
+
+        .admin-interface form .form-row p.file-upload > input[type="file"] {
+            display: block;
+            width: auto;
+            padding: 0px;
+        }
+
+        /* fix inline horizontal scroll caused by checkbox-row */
+        .admin-interface form .form-row > div.checkbox-row {
+            width: 100%;
+        }
+    }
+
+
+    /* FIX WIDE FIELDSET HELPS / ERROR MESSAGES */
+    .admin-interface form .wide p.help,
+    .admin-interface form .wide div.help {
+        padding-left: 50px;
+    }
+
+    .admin-interface form .wide input + p.help,
+    .admin-interface form .wide input + div.help {
+        margin-left: 160px;
+    }
+
+    @media (max-width:767px){
+        .admin-interface form .form-row div.help {
+            display: block;
+            width: 100%;
+        }
+    }
+
+    .admin-interface form .wide ul.errorlist {
+        margin-left: 200px;
+    }
+
+    /* LIST FILTER */
+    .admin-interface .module.filtered h2 {
+        border-bottom-left-radius:0;
+        border-bottom-right-radius:0;
+    }
+
+    .admin-interface .module.filtered #changelist-filter {
+        border-bottom-left-radius:4px;
+        border-bottom-right-radius:4px;
+    }
+
+    .admin-interface .module.filtered #changelist-filter h2 {
+        font-size: 11px;
+        padding: 10px 15px;
+    }
+
+    /* begin fix issue #13 - Datetime widget broken in long inlines */
+    .admin-interface p.datetime {
+        white-space:nowrap;
+    }
+    /* end fix */
+
+    /* begin fix lateral padding to align text with field labels */
+    .admin-interface .module h2,
+    .admin-interface.dashboard .module caption,
+    .admin-interface .module.filtered h2,
+    .admin-interface .inline-group h2 {
+        padding-left:10px;
+        padding-right:10px;
+    }
+    /* end fix */
+
+    /* begin fix restrict tabular-inline horizontal-scroll to inline-group instead of whole page */
+    .admin-interface .inline-group[data-inline-type="tabular"] {
+        overflow-x:auto;
+    }
+    /* end fix */
+
+    /* begin fix stacked-inline margin-bottom in responsive small viewport */
+    .admin-interface .inline-group[data-inline-type="stacked"] .module {
+        margin-bottom:0px;
+    }
+    /* end fix */
+
+    /* begin fix issue #10 - Related widget broken in long tabular inline */
+    .admin-interface .inline-group .tabular .related-widget-wrapper {
+        white-space:nowrap;
+    }
+    /* end fix */
+
+    .admin-interface .inline-related h3 {
+        padding:6px 10px;
+    }
+
+    /* begin fix issue #12 - Inlines bad delete buttons alignement */
+    .admin-interface .inline-group .tabular thead th:last-child:not([class]):not([style]) {
+        text-align:right;
+    }
+
+    .admin-interface .inline-group .tabular tr td {
+        vertical-align: top;
+    }
+
+    .admin-interface .inline-group .tabular tr td.delete {
+        text-align:right;
+        padding-right:15px;
+        vertical-align: top;
+    }
+
+    .admin-interface .inline-group .tabular tr td input[type="checkbox"] {
+        margin: 7px 0px;
+    }
+
+    .admin-interface .inline-group .tabular tr td.delete a.inline-deletelink {
+        margin-top:4px;
+        overflow:hidden;
+        text-indent:9999px;
+    }
+    /* end fix */
+
+    /* top-right buttons color on hover -> just a lighten grey */
+    .admin-interface .object-tools a {
+        color:#FFFFFF;
+    }
+    .admin-interface .object-tools a:focus,
+    .admin-interface .object-tools a:hover,
+    .admin-interface .object-tools li:focus a,
+    .admin-interface .object-tools li:hover a {
+        background-color:#AAAAAA;
+    }
+
+    /* fix textarea horizontal scroll on Firefox */
+    @media (max-width: 767px){
+        .admin-interface .aligned .form-row textarea {
+            width: 100% !important;
+            flex: 0 1 auto;
+        }
+        .admin-interface .aligned .form-row input[type="file"] {
+            width: 100% !important;
+        }
+    }
+
+    /* improve responsive selector */
+
+    /* fix [stacked, not-stacked] equalize horizontal and vertical select padding for selector */
+    .admin-interface .selector .selector-available select,
+    .admin-interface .selector .selector-chosen select {
+        padding: 7px 10px;
+        display: block;
+    }
+
+    /* fix [stacked, not-stacked] select options text overflow */
+    .admin-interface .selector .selector-available select option,
+    .admin-interface .selector .selector-chosen select option {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* fix [not-stacked] equalize selectors height by adding the height of the .selector-available filter-bar */
+    .admin-interface .selector:not(.stacked) .selector-chosen select {
+        height: calc(46px + 17.2em) !important;
+    }
+
+    /*
+    list-filter-dropdown
+    */
+
+    .admin-interface .list-filter-dropdown {
+        margin-top:10px;
+        margin-bottom:20px;
+    }
+
+    .admin-interface .list-filter-dropdown select {
+        background-color:#FFFFFF;
+        width:90%;
+        margin-right:5%;
+    }
+
+    /*
+    related modal + magnific popup customization
+    https://github.com/dimsemenov/Magnific-Popup
+    */
+    .admin-interface .related-modal.mfp-bg {
+        background-color: #000000;
+        opacity: 0.3;
+    }
+
+    .admin-interface .related-modal .mfp-content {
+        height: 100%;
+        -webkit-box-shadow: 0px 5px 30px 0px rgba(0,0,0,0.2);
+        -moz-box-shadow: 0px 5px 30px 0px rgba(0,0,0,0.2);
+        box-shadow: 0px 5px 30px 0px rgba(0,0,0,0.2);
+    }
+
+    .admin-interface .related-modal .mfp-container {
+        padding: 80px 80px 80px 80px;
+    }
+
+    .admin-interface .related-modal__nested .mfp-container {
+        padding: 40px 80px 40px 80px;
+    }
+
+    @media (max-width:640px){
+        .admin-interface .related-modal .mfp-container {
+            padding: 80px 20px 80px 20px;
+        }
+        .admin-interface .related-modal__nested .mfp-container {
+            padding: 40px 40px 40px 40px;
+        }
+    }
+
+    @media (max-height:640px){
+        .admin-interface .related-modal .mfp-container {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .admin-interface .related-modal__nested .mfp-container {
+            padding: 40px 40px 40px 40px;
+        }
+    }
+
+    .admin-interface .related-modal .related-modal-iframe-container {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: relative;
+        z-index: 100;
+        overflow: hidden;
+        
+        border-radius: 4px;
+        
+    }
+
+    .admin-interface .related-modal #related-modal-iframe {
+        width: 100%;
+        height: 100%;
+        background-color: #FFFFFF;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: 30px 30px;
+        background-image: url("data:image/svg+xml;utf8,<?xml version='1.0' encoding='utf-8'?><svg width='30px' height='30px' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='xMidYMid' class='uil-ring-alt'><rect x='0' y='0' width='100' height='100' fill='none' class='bk'></rect><circle cx='50' cy='50' r='40' stroke='%23eeeeee' fill='none' stroke-width='6' stroke-linecap='round'></circle><circle cx='50' cy='50' r='40' stroke='%23aaaaaa' fill='none' stroke-width='6' stroke-linecap='round'><animate attributeName='stroke-dashoffset' dur='2s' repeatCount='indefinite' from='0' to='500'></animate><animate attributeName='stroke-dasharray' dur='2s' repeatCount='indefinite' values='150 100;1 250;150 100'></animate></circle></svg>");
+        border: none;
+        margin: 0 auto;
+        padding: 0;
+        display: block;
+    }
+
+    .admin-interface .related-modal .mfp-close {
+        width: 40px;
+        height: 40px;
+        opacity: 1.0;
+        color: rgba(0, 0, 0, 0.4);
+        
+    }
+
+    .admin-interface .related-modal .mfp-close:hover,
+    .admin-interface .related-modal .mfp-close:active {
+        color: rgba(0, 0, 0, 0.6);
+        top: 0;
+    }
+
+    /*
+    * jQuery UI CSS Framework
+    * Copyright (c) 2010 AUTHORS.txt (http://jqueryui.com/about)
+    * Dual licensed under the MIT (MIT-LICENSE.txt) and GPL (GPL-LICENSE.txt) licenses.
+    * http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/base/jquery.ui.core.css
+    */
+
+    /*
+    backward compatibility:
+    .ui-tabs-selected:      jquery ui <  1.10
+    .ui-tabs-active classes jquery ui >= 1.10
+    */
+
+    /* Layout helpers
+    ----------------------------------*/
+    .ui-helper-hidden { display: none; }
+    .ui-helper-hidden-accessible { position: absolute; left: -99999999px; }
+    .ui-helper-reset { margin: 0; padding: 0; border: 0; outline: 0; line-height: 1.3; text-decoration: none; font-size: 100%; list-style: none; }
+    .ui-helper-clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+    .ui-helper-clearfix { display: inline-block; }
+    /* required comment for clearfix to work in Opera \*/
+    * html .ui-helper-clearfix { height:1%; }
+    .ui-helper-clearfix { display:block; }
+    .ui-helper-zfix { width: 100%; height: 100%; top: 0; left: 0; position: absolute; opacity: 0; filter:Alpha(Opacity=0); }
+    .ui-state-disabled { cursor: default !important; }
+    .ui-icon { display: block; text-indent: -99999px; overflow: hidden; background-repeat: no-repeat; }
+    /* http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/base/jquery.ui.tabs.css */
+    .ui-widget-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .ui-tabs { position: relative; padding: .2em; zoom: 1; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
+    .ui-tabs .ui-tabs-nav { margin: 0; padding: .2em .2em 0; }
+    .ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 1px; margin: 0 .2em 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
+    .ui-tabs .ui-tabs-nav li a { float: left; padding: .5em 1em; text-decoration: none; }
+    .ui-tabs .ui-tabs-nav li.ui-tabs-active, .ui-tabs .ui-tabs-nav li.ui-tabs-selected { margin-bottom: 0; padding-bottom: 1px; }
+    .ui-tabs .ui-tabs-nav li.ui-tabs-active a, .ui-tabs .ui-tabs-nav li.ui-tabs-selected a, .ui-tabs .ui-tabs-nav li.ui-state-disabled a, .ui-tabs .ui-tabs-nav li.ui-state-processing a { cursor: text; }
+    .ui-tabs .ui-tabs-nav li a, .ui-tabs.ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-selected a { cursor: pointer; } /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */
+    .ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 1em 1.4em; background: none; }
+    .ui-tabs .ui-tabs-hide {
+        position: absolute;
+        display: none;
+    }
+
+    /* Custom tabs theme */
+    .admin-interface .ui-tabs {
+        padding: 0;
+    }
+
+    .admin-interface .ui-tabs,
+    .admin-interface .ui-tabs .ui-widget-header,
+    .admin-interface .ui-tabs .ui-widget-header .ui-state-default {
+        border: none;
+        background: transparent;
+    }
+
+    .admin-interface .ui-tabs .ui-tabs-nav {
+        padding: 10px 0 0 10px;
+        border-bottom: none;
+    }
+    .admin-interface .ui-tabs .ui-tabs-nav li {
+        margin: 0 0 0 -1px;
+    }
+    .admin-interface .ui-tabs .ui-tabs-nav li.required {
+        font-weight: bold;
+    }
+    .admin-interface .ui-tabs .ui-tabs-nav li a {
+        border: 1px solid #eeeeee;
+        background-color: #f8f8f8;
+        border-bottom: none;
+        color: #666666;
+        padding: 7px 14px 8px 14px;
+        margin-top: 1px;
+        -moz-border-radius-topright: 4px;
+        -webkit-border-top-right-radius: 4px;
+        -moz-border-radius-topleft: 4px;
+        -webkit-border-top-left-radius: 4px;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        font-size: 12px;
+        text-transform: uppercase;
+        outline: none;
+    }
+
+    .admin-interface .ui-tabs .ui-tabs-nav li.ui-tabs-active a,
+    .admin-interface .ui-tabs .ui-tabs-nav li.ui-tabs-selected a {
+        padding: 8px 14px 8px 14px;
+        margin-top: 0px;
+        margin-bottom: -1px;
+        font-weight: bold;
+        background-color: #FFFFFF;
+        color: #44B78B;
+        border-bottom: 1px solid #FFFFFF;
+    }
+
+    .admin-interface .ui-tabs .ui-tabs-panel {
+        border: 1px solid #eeeeee;
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .admin-interface .inline-group .tabular .ui-tabs .ui-tabs-panel {
+        padding: 8px;
+    }
+
+    .admin-interface .inline-group .tabular .ui-tabs .ui-tabs-nav {
+        padding-left: 4px;
+    }
+
+    .admin-interface .inline-group .tabular tr td {
+        vertical-align: bottom;
+    }
+
+    .admin-interface .inline-group .tabular tr.has_original td.original,
+    .admin-interface .inline-group .tabular tr td.delete {
+        vertical-align: top;
+    }
+
+    .admin-interface .inline-group .tabular .datetime > input {
+        margin-right: 5px;
+    }
+
+    .admin-interface .inline-group .tabular .datetime br {
+        display: none;
+    }
+
+    .admin-interface #changelist .row1:not(.selected):hover,
+    .admin-interface #changelist .row2:not(.selected):hover {
+        background: #f9f9f9;
+    }
+
+    .admin-interface .row2 {
+        background: #fcfcfc;
+    }
+
+    .admin-interface .row2 .ui-tabs .ui-tabs-nav li a {
+        background-color: #f5f5f5;
+        border: 1px solid #ebebeb;
+    }
+
+    .admin-interface .row2 .ui-tabs .ui-tabs-nav li.ui-tabs-active a,
+    .admin-interface .row2 .ui-tabs .ui-tabs-nav li.ui-tabs-selected a {
+        background-color: #fcfcfc;
+        border-bottom: 1px solid #fcfcfc;
+    }
+
+    /*
+    django-modeltranslation support
+    https://github.com/deschler/django-modeltranslation
+    */
+
+    .admin-interface #content h1 select {
+        text-transform: uppercase;
+        margin-left: 15px;
+        min-width: 50px;
+    }
+
+    .admin-interface .ui-tabs .ui-tabs-panel[id^=tab_id_] {
+        border: none;
+        border-top: 1px solid #eeeeee;
+        padding: 0;
+        margin-bottom: 0;
+    }
+
+    /*
+    sorl-thumbnail - improved AdminImageMixin widget layout
+    https://github.com/mariocesar/sorl-thumbnail
+    */
+
+    .admin-interface a.thumbnail + a {
+        font-weight: normal;
+    }
+
+    .admin-interface a.thumbnail + a + input[type="checkbox"] {
+        margin: 10px 0px 10px 18px;
+    }
+
+    @media (max-width: 767px){
+        .admin-interface a.thumbnail + a {
+            display: block;
+            margin-top: 3px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .admin-interface a.thumbnail + a + input[type="checkbox"]  {
+            margin: 15px 0;
+        }
+    }
+
+    .admin-interface a.thumbnail ~ label {
+        color: #333;
+        font-size: 11px;
+        display: inline;
+        float: none;
+        margin-left: 2px;
+    }
+
+    .admin-interface.change-form div[style="float:left"] {
+        font-size: 11px;
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    @media (max-width: 767px){
+        .admin-interface.change-form div[style="float:left"] {
+            font-size: 12px;
+            width: 100%;
+        }
+    }
+
+    .admin-interface .aligned .form-row a.thumbnail ~ input[type="file"] {
+        margin-top: 0px;
+    }
+
+    @media (max-width:767px){
+        .admin-interface .aligned .form-row a.thumbnail ~ input[type="file"] {
+            width: auto;
+            padding: 0px;
+            display: block;
+            margin-top: 3px;
+        }
+
+        .admin-interface div[style="float:left"] {
+            margin-bottom: 0px;
+        }
+
+        .admin-interface div[style="float:left"] + div.help {
+            margin-top: 0px !important;
+        }
+    }
+
+    /*
+    django-tabbed-admin support
+    https://github.com/omji/django-tabbed-admin
+    */
+
+    /* Hide tabs until ready */
+    /*
+    .admin-interface #tabs ul {
+        display: none;
+    }
+
+    .admin-interface #tabs ul.ui-tabs-nav {
+        display: block;
+    }
+    */
+
+    .admin-interface .ui-tabs .ui-tabs-panel[id^=tabs] .module.aligned:last-child {
+        margin-bottom: 0;
+    }
+
+    .admin-interface .ui-tabs .ui-tabs-panel[id^=tabs] .module.aligned:last-child .form-row:last-child {
+        border-bottom: none;
+    }
+
+    @media (max-width: 350px){
+        .admin-interface .ui-tabs .ui-tabs-panel[id^=tabs] .vTextField,
+        .admin-interface .inline-related .vTextField {
+            width: 17em;
+        }
+    }
+
+    @media (max-width: 767px){
+        /* fix horizontal overflow - responsive.css:563 */
+        .admin-interface .ui-tabs .ui-tabs-panel[id^=tabs] .aligned .form-row > div:not([class]) {
+            width: 100% !important;
+        }
+    }
+
+    /*
+    ckeditor + light theme
+    https://github.com/Ikimea/ckeditor-light-theme
+    */
+
+    .admin-interface .cke {
+        border: none;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+    }
+
+    .admin-interface .cke_inner,
+    .admin-interface .cke_wysiwyg_frame {
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+
+    .admin-interface .cke_inner {
+        border: 1px solid #CCCCCC;
+    }
+
+    .admin-interface .cke_chrome {
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
+    .admin-interface .cke_top {
+        background: #f8f8f8;
+        border-top: none;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        border-bottom: 1px solid #EEEEEE;
+        padding-left: 10px;
+        padding-right: 10px;
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
+    .admin-interface .cke_toolgroup {
+        background: none;
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
+    .admin-interface .cke_bottom {
+        background: #f8f8f8;
+        border-top: 1px solid #EEEEEE;
+
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+
+    .admin-interface .cke_source {
+        padding: 13px 15px;
+        box-sizing: border-box;
+    }
+
+    .admin-interface a.cke_button,
+    .admin-interface a.cke_button:active,
+    .admin-interface a.cke_button:hover,
+    .admin-interface a.cke_button:focus {
+        box-shadow: none;
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+        background-image: none;
+        border-radius: 4px;
+        border: none;
+    }
+
+    .admin-interface a.cke_button:active,
+    .admin-interface a.cke_button:hover,
+    .admin-interface a.cke_button:focus {
+        background-color: #E8E8E8 !important;
+    }
+
+    .admin-interface a.cke_button.cke_button_on {
+        background-color: #CCCCCC !important;
+    }
+
+    .admin-interface a.cke_button.cke_button_disabled {
+        background-color: transparent !important;
+    }
+
+    .admin-interface .cke_resizer {
+        border-color: transparent #666666 transparent transparent;
+    }
+
+    @media (max-width: 767px){
+
+        .admin-interface .django-ckeditor-widget,
+        .admin-interface .cke {
+            width: 100% !important;
+        }
+
+        .admin-interface .cke_top {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .admin-interface .cke_toolbar {
+            height: auto;
+        }
+
+        .admin-interface .cke_contents {
+            height: auto;
+        }
+
+        .admin-interface .tabular .django-ckeditor-widget,
+        .admin-interface .tabular .cke {
+            width: 400px !important;
+        }
+
+        .admin-interface .tabular .cke_contents {
+            height: 90px !important;
+        }
+    }
+    .admin-interface textarea.tinymce ~ p.help {
+        margin-top:5px !important;
+    }
+
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/changelists.css">
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css">
+    <script type="text/javascript" src="/admin/jsi18n/"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+    <script type="text/javascript" src="/static/admin/js/core.js"></script>
+    <script type="text/javascript" src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+    <script type="text/javascript" src="/static/admin/js/actions.js"></script>
+    <script type="text/javascript" src="/static/admin/js/urlify.js"></script>
+    <script type="text/javascript" src="/static/admin/js/prepopulate.js"></script>
+    <script type="text/javascript" src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/responsive.css">
+
+    <meta name="robots" content="NONE,NOARCHIVE">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" href="/static/admin/css/responsive.css?v=0.12.2">
+    <link rel="stylesheet" type="text/css" href="/static/admin_interface/magnific-popup/magnific-popup.css?v=0.12.2">
+    <script type="text/javascript" src="/static/admin_interface/magnific-popup/jquery.magnific-popup.js?v=0.12.2"></script>
+    <script type="text/javascript" src="/static/admin_interface/related-modal/related-modal.js?v=0.12.2"></script>
+</head>
+
+
+<body class="admin-interface flat-theme forkuptool-theme app-admin_interface model-theme change-list"
+  data-admin-utc-offset="-10800">
+
+<!-- Container -->
+<div id="container">
+  
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+            <h1 id="site-name">    
+                <span>{{title}}</span>
+            </h1>
+        </div>    
+        <div id="user-tools">
+            <a href="/admin/">Administração</a> /
+            <a href="/">Início</a> /
+            <a href="/admin/password_change/">Alterar senha</a> /
+            <a href="/admin/logout/">Encerrar sessão</a>
+        </div>
+    </div>
+    
+    <div class="breadcrumbs">
+        <a href="/">Início</a>&nbsp;&nbsp;&nbsp;
+        <a href="{% url 'modulo_configuration' %}">Módulo de configuração</a>&nbsp;&nbsp;&nbsp;
+        <a href="/admin/">Módulo de análise de repositórios</a>&nbsp;&nbsp;&nbsp;
+        <a href="/admin/">Módulo de execução</a>
+    </div>
+
+    <!-- Content -->
+    <div id="content" class="flex">
+       
+        <h1>{{subtitle}}</h1>
+        
+            <div id="content-main">
+            {% block content %}
+            {% endblock %}
+            </div>
+
+        
+        <br class="clear">
+    </div>
+    <!-- END Content -->
+
+    <div id="footer"></div>
+</div>
+<!-- END Container -->
+
+</body>
+</html>

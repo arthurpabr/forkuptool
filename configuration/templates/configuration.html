@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if messages %} 
+	{% for msg, msg_class in messages %}
+		<div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+	{% endfor %} 
+{% endif %}
+
+<h2>Módulo de configuração</h2>
+<h3>Selecione uma opção: </h3>
+<ul>
+	<li>
+		<a class="btn btn-info btn-mini" href="{% url 'admin:configuration_configuracaogeral_changelist' %}" role="button">Configurações dos projetos</a>
+	</li>
+	<li>
+		<a class="btn btn-info btn-mini" href="{% url 'admin:configuration_configuracaoferramenta_changelist' %}" role="button">Configurações de execução da ferramenta</a>
+	</li>
+</ul>
+{% endblock %}
