@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if messages %} 
+	{% for msg, msg_class in messages %}
+		<div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+	{% endfor %} 
+{% endif %}
+
+<h2>Módulo de análise de repositórios</h2>
+<p>Informe um intervalo de datas para análise.</p>
+<form class="form-horizontal" action="/analisar_timeline/" method="post" novalidate>
+    {% csrf_token %}
+    <div>
+		{% if form.non_field_errors %}
+			{{ form.non_field_errors }}
+		{% else %}	
+			&nbsp;
+		{% endif %}
+	</div>
+    {% for field in form %}
+	<div class="form-group" style="padding: 0 0 15px;">
+		{{ field.label_tag }}
+		{{ field }}
+		{{ field.errors }}
+	</div>
+	{% endfor %}
+	<input class="btn btn-success" type="submit" value="Analisar" />&nbsp;&nbsp;&nbsp;
+	<a class="btn btn-info" href="{% url 'home' %}" role="button">Voltar</a>
+</form> 
+{% endblock %}

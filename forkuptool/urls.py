@@ -23,7 +23,7 @@ admin.site.index_title = 'Forkuptool'
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^', include('core.urls')),
-    # url(r'^', include('analyze.urls')),
+    url(r'^', include('analyze.urls')),
     url(r'^', include('configuration.urls')),
     # url(r'^', include('execution.urls')),
 ]
