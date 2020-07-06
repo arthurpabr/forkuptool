@@ -3,7 +3,7 @@ import threading
 import os
 import filecmp
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 
 from pydriller import RepositoryMining, GitRepository
