@@ -16,5 +16,15 @@
 	<li>
 		<a class="btn btn-info btn-mini" href="{% url 'analisar_timeline' %}" role="button">Timeline entre repositórios origem e forkeado</a>
 	</li>
+	<li>
+		<a class="btn btn-info btn-mini" href="{% url 'simular_conflitos' %}" role="button">Simulação de conflitos de mesclagem entre origem e forkeado</a>
+	</li>
+	<br><hr>
+	<li>
+		<a class="btn btn-info btn-mini" href="{% url 'comparar_repositorios' %}" role="button">Comparar repositórios</a>
+	</li>
+	<li>
+		<a class="btn btn-info btn-mini" href="{% url 'visualizar_comparacao_repositorios' %}" role="button">Visualizar comparação entre repositórios</a>
+	</li>
 </ul>
 {% endblock %}

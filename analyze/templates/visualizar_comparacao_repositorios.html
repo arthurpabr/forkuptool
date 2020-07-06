@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% if messages %} 
+    {% for msg, msg_class in messages %}
+        <div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+    {% endfor %} 
+{% endif %}
+
+
+<h2>Módulo de análise de repositórios</h2>
+<h3>Visualizar comparação entre repositórios</h3>
+{% if comparacao_obj %}
+    <div>
+        <b>Repositório fornecedor:</b> {{ comparacao_obj.descricao_vendor }} </br />
+        <b>Repositório cliente:</b> {{ comparacao_obj.descricao_client }}</br />&nbsp;
+    </div>
+    
+    <h4>Arquivos com diferenças</h4>
+    <div class='alert alert-warning'><b>Obs.:</b> total de arquivos ignorados por regras de negócio: {{ comparacao_obj.numero_arquivos_ignorados }}</div>
+    <p><a href="{% url 'visualizar_analise_diferencas' id=comparacao_obj.pk %}">(análise descritiva das diferenças)</a></p>
+
+    <table class="table table-sm table-bordered table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Arquivo fornecedor</th>
+                <th scope="col">Arquivo cliente</th>
+                <th scope="col">Ver diff entre arquivos</th>
+                <th scope="col">Realizar análise do diff entre arquivos</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for arquivos in diff_comparados %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ arquivos.arquivo_vendor }}</td>
+                {% if arquivos.arquivo_client %}
+                    <td>{{ arquivos.arquivo_client }}</td>
+                {% else %}
+                    <td>-</td>
+                {% endif %}
+                {% if arquivos.eh_binario or not arquivos.arquivo_client %}
+                <td>
+                    <a style="pointer-events: none;cursor: default;color: gray">ver diff</a>
+                </td>
+                {% else %}
+                <td>
+                    <a href="{% url 'diff_entre_arquivos' id=arquivos.pk %}">ver diff</a>
+                </td>
+                {% endif %}
+                <td>
+                    {% if arquivos.analise_diff_realizada %}
+                        <a href="/admin/core/arquivoscomparados/{{ arquivos.pk }}/change/">ver análise</a>  
+                    {% else %}
+                        <a href="/admin/core/arquivoscomparados/{{ arquivos.pk }}/change/">realizar análise</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>                
+
+
+    <br /><hr>
+
+
+    <h4>Nº de arquivos por tipo - geral</h4>
+    <table class="table table-sm table-bordered table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Tipo do arquivo</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for key, value in comparados_por_tipo %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="table-info">
+            <td colspan="3">
+                <b>Total de arquivos: {{ comparados_por_tipo_total }}</b>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <br /><hr>
+
+
+    <h4>Nº de arquivos por módulo - geral</h4>
+    <table class="table table-sm table-bordered table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Módulo</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for key, value in comparados_por_modulo %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="table-info">
+            <td colspan="3">
+                <b>Total de arquivos: {{ comparados_por_modulo_total }}</b>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    </div>
+
+
+    <br /><hr>
+
+
+    <h4>Nº de arquivos por tipo - com diferenças</h4>
+    <table class="table table-sm table-bordered table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Tipo do arquivo</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for key, value in diff_por_tipo %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="table-info">
+            <td colspan="3">
+                <b>Total de arquivos: {{ diff_por_tipo_total }}</b>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <br /><hr>
+
+    <h4>Nº de arquivos por módulo - com diferenças</h4>
+    <table class="table table-sm table-bordered table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Módulo</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for key, value in diff_por_modulo %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="table-info">
+            <td colspan="3">
+                <b>Total de arquivos: {{ diff_por_modulo_total }}</b>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <br /><hr>
+
+    <h4>Nº de arquivos com diferenças por commit</h4>
+    <table class="table table-sm table-bordered table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Commit</th>
+                <th scope="col">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for key, value in diff_por_commit %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ key }}</td>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+        <tr class="table-info">
+            <td colspan="3">
+                <b>Total de arquivos: {{ diff_por_commit_total }}</b>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+{% else %}
+    <p>Para visualizar a comparação entre repositórios, antes escolha um registro para ser detalhado.</p>
+    <form class="form-horizontal" action="/visualizar_comparacao_repositorios/" method="post" novalidate>
+        {% csrf_token %}
+        <div>
+            {% if form.non_field_errors %}
+                {{ form.non_field_errors }}
+            {% else %}  
+                &nbsp;
+            {% endif %}
+        </div>
+        {% for field in form %}
+        <div class="form-group" style="padding: 0 0 15px;">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+        </div>
+        {% endfor %}
+        <input class="btn btn-lg btn-success" type="submit" value="Prosseguir" />
+    </form>
+{% endif %}
+
+{% endblock %}

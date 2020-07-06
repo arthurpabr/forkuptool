@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% if messages %} 
+    {% for msg, msg_class in messages %}
+        <div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+    {% endfor %} 
+{% endif %}
+
+<h2>Módulo de análise de repositórios</h2>
+<h3>Comparação entre repositórios</h3>
+
+<p>Para executar a comparação, defina antes a configuração geral do sistema a ser utilizada.</p>
+<div class='alert alert-warning'>
+    <div id='loading' style="display:none;"><img src="{% static "analyze/loading.gif" %}"></div><div id='thread_msg'></div>
+</div>
+<form class="form-horizontal" novalidate>
+    {% csrf_token %}
+    <div>
+        {% if form.non_field_errors %}
+            {{ form.non_field_errors }}
+        {% else %}  
+            &nbsp;
+        {% endif %}
+    </div>
+    {% for field in form %}
+    <div class="form-group" style="padding: 0 0 15px;">
+        {{ field.label_tag }}
+        {{ field }}
+        {{ field.errors }}
+    </div>
+    {% endfor %}
+    <input class="btn btn-lg btn-success" type="button" id='startThread' value="Prosseguir" />
+</form> 
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" ></script>
+<script type='text/javascript'>
+    $(document).ready(function(){
+
+        function RetornaDataHoraAtual(){
+            var dNow = new Date();
+            var minutes = (dNow.getMinutes()<10?'0':'') + dNow.getMinutes();
+            var localdate = dNow.getDate() + '/' + (dNow.getMonth()+1) + '/' + dNow.getFullYear() + ' ' + dNow.getHours() + ':' + minutes;
+            return localdate;
+        }
+
+        $('#startThread').on('click',function(){
+            var configuracao = $("#id_configuracaogeral_escolhida").val();
+            $.ajax({
+                beforeSend: function(){
+                    $("#loading").show();
+                },
+                type: "POST",
+                cache: false,
+                url: "/comparar_repositorios/",
+                data: { 
+                    configuracaogeral_escolhida: configuracao,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                dataType: "json",
+                success: function(data) {
+                    var msg = $('<div id=" '+ data.id +'">').text(RetornaDataHoraAtual()+ '- task ' + data.id + ' is working');
+                    $('#thread_msg').append(msg);
+                    var i = 0;
+                    var threadInterval = setInterval(function(){
+
+                        checkTask("/check_thread/" + data.id, function(check){
+                            if(check.is_done){
+                                msg.text(RetornaDataHoraAtual() + '- task ' + data.id + ' succeeded.');
+                                $("#loading").hide();
+                                window.clearInterval(threadInterval);
+                            }
+                            // if(++i === 10){
+                            //  msg.text('Task ' + data.id + ' failed.')
+                            //  window.clearInterval(threadInterval)
+                            // }
+                        })
+                    },5000)
+                }
+            })
+        })
+
+        function checkTask(url,cb){
+            $.ajax({
+                type: "GET",
+                cache: false,
+                url: url,
+                dataType: "json",
+                success: function(data) {
+                    cb(data)
+                }
+            })
+        }
+    })
+</script>
+{% endblock %}

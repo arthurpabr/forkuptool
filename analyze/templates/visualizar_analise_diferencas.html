@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% if messages %} 
+    {% for msg, msg_class in messages %}
+        <div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+    {% endfor %} 
+{% endif %}
+
+<h2>Módulo de análise de repositórios</h2>
+<h3>Visualizar análise de diferenças entre par de arquivos</h3>
+<p class="lead">Arquivos com diferenças</p>
+<div class='alert alert-warning'><b>Obs.:</b> total de arquivos ignorados por regras de negócio: {{ comparacao_obj.numero_arquivos_ignorados }}</div>
+<table class="table table-sm table-bordered table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Arquivo</th>
+            <th scope="col">Nº linhas inseridas</th>
+            <th scope="col">Nº linhas excluídas</th>
+            <th scope="col">Análise descritiva das diferenças</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for arquivos in diff_comparados %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ arquivos.arquivo_vendor }}</td>
+            <td>{{ arquivos.numero_linhas_inseridas }}</td>
+            <td>{{ arquivos.numero_linhas_excluidas }}</td>
+            <td>{{ arquivos.analise_diff }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
