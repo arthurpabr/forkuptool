@@ -558,5 +558,6 @@ def visualizar_diff_entre_arquivos(request, id):
 		arquivos_comparados.arquivo_vendor.caminho_completo, \
 		arquivos_comparados.comparacao.path_repositorio_client+arquivos_comparados.arquivo_client.caminho_completo)
 
-	diff2HtmlCompare.showDiff(outputpath)
-	return redirect('visualizar_comparacao_repositorios', id=arquivos_comparados.comparacao.id)
+	#diff2HtmlCompare.showDiff(outputpath)
+	#return redirect('visualizar_comparacao_repositorios', id=arquivos_comparados.comparacao.id)
+	return redirect('diff')

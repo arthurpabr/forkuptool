@@ -47,14 +47,14 @@
                 </td>
                 {% else %}
                 <td>
-                    <a href="{% url 'diff_entre_arquivos' id=arquivos.pk %}">ver diff</a>
+                    <a target="_blank" href="{% url 'diff_entre_arquivos' id=arquivos.pk %}">ver diff</a>
                 </td>
                 {% endif %}
                 <td>
                     {% if arquivos.analise_diff_realizada %}
-                        <a href="/admin/core/arquivoscomparados/{{ arquivos.pk }}/change/">ver análise</a>  
+                        <a href="/admin/configuration/arquivoscomparados/{{ arquivos.pk }}/change/">ver análise</a>  
                     {% else %}
-                        <a href="/admin/core/arquivoscomparados/{{ arquivos.pk }}/change/">realizar análise</a>
+                        <a href="/admin/configuration/arquivoscomparados/{{ arquivos.pk }}/change/">realizar análise</a>
                     {% endif %}
                 </td>
             </tr>

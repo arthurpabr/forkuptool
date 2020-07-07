@@ -57,9 +57,10 @@ HTML_TEMPLATE = """
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="mobile-web-app-capable" content="yes">
-        <link rel="stylesheet" href="%(reset_css)s" type="text/css">
-        <link rel="stylesheet" href="%(diff_css)s" type="text/css">
-        <link class="syntaxdef" rel="stylesheet" href="%(pygments_css)s" type="text/css">
+        <style>###reset_css###</style>
+        <style>###diff_css###</style>
+        <style>###pygments_css###</style>
+
     </head>
     <body>
         <div class="" id="topbar">
@@ -109,8 +110,8 @@ HTML_TEMPLATE = """
                 %(modified_code)s
             </div>
         </div>
-<script src="%(jquery_js)s" type="text/javascript"></script>
-<script src="%(diff_js)s" type="text/javascript"></script>
+<script>###jquery_js###</script>
+<script>###diff_js###</script>
     </body>
 </html>
 """
@@ -281,11 +282,11 @@ class CodeDiff(object):
     Manages a pair of source files and generates a single html diff page comparing
     the contents.
     """
-    pygmentsCssFile = "./deps/codeformats/%s.css"
-    diffCssFile = "./deps/diff.css"
-    diffJsFile = "./deps/diff.js"
-    resetCssFile = "./deps/reset.css"
-    jqueryJsFile = "./deps/jquery.min.js"
+    pygmentsCssFile = "deps/codeformats/%s.css"
+    diffCssFile = "deps/diff.css"
+    diffJsFile = "deps/diff.js"
+    resetCssFile = "deps/reset.css"
+    jqueryJsFile = "deps/jquery.min.js"
 
     def __init__(self, fromfile, tofile, fromtxt=None, totxt=None, name=None):
         self.filename = name
@@ -386,7 +387,37 @@ class CodeDiff(object):
             "page_width":     "page-80-width" if options['print_width'] else "page-full-width"
         }
 
+        string_reset_css = ''
+        f = open(os.path.abspath('analyze/util/'+self.resetCssFile), 'r')
+        string_reset_css = f.read()
+        f.close
+
+        string_pygments_css = ''
+        f = open(os.path.abspath('analyze/util/'+self.pygmentsCssFile % options['syntax_css']), 'r')
+        string_pygments_css = f.read()
+        f.close
+
+        string_diff_css = ''
+        f = open(os.path.abspath('analyze/util/'+self.diffCssFile), 'r')
+        string_diff_css = f.read()
+        f.close
+
+        string_jquery_js = ''
+        f = open(os.path.abspath('analyze/util/'+self.jqueryJsFile), 'r')
+        string_jquery_js = f.read()
+        f.close
+
+        string_diff_js = ''
+        f = open(os.path.abspath('analyze/util/'+self.diffJsFile), 'r')
+        string_diff_js = f.read()
+        f.close
+
         self.htmlContents = HTML_TEMPLATE % answers
+        self.htmlContents = self.htmlContents.replace('###reset_css###',string_reset_css)
+        self.htmlContents = self.htmlContents.replace('###pygments_css###',string_pygments_css)
+        self.htmlContents = self.htmlContents.replace('###diff_css###',string_diff_css)
+        self.htmlContents = self.htmlContents.replace('###jquery_js###',string_jquery_js)
+        self.htmlContents = self.htmlContents.replace('###diff_js###',string_diff_js)
 
     def write(self, path):
         fh = io.open(path, 'w')
@@ -410,6 +441,6 @@ def generateDiff2Html(file1, file2):
     }
     codeDiff = CodeDiff(file1, file2, name=file2)
     codeDiff.format(options)
-    outputpath = os.path.abspath('./core/templates/diff.html')
+    outputpath = os.path.abspath('./analyze/templates/diff.html')
     codeDiff.write(outputpath)
     return outputpath
