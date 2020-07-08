@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if messages %} 
+	{% for msg, msg_class in messages %}
+		<div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+	{% endfor %} 
+{% endif %}
+
+<h2>Módulo de execução</h2>
+
+<p>Resultados da execução</p>
+{% for arquivo, resultado_por_arquivo in resultado_processamento_por_arquivo.items %}
+	<p>Arquivo: {{arquivo}} </p>
+	<p>
+		{% for instrucao, resultado in resultado_por_arquivo.items %}
+			<ul>
+				<li>Instrução {{instrucao}}: {{resultado}}</li>
+			</ul>
+		{% endfor %}
+	</p>
+{% endfor %}
+
+{% endblock %}

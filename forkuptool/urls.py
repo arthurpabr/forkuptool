@@ -25,5 +25,5 @@ urlpatterns = [
     url(r'^', include('core.urls')),
     url(r'^', include('analyze.urls')),
     url(r'^', include('configuration.urls')),
-    # url(r'^', include('execution.urls')),
+    url(r'^', include('execution.urls')),
 ]
