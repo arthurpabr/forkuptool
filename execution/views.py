@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render
 
 from .forms import ExecutarFerramentaForm
-from .utils import avaliar_patch_file
+from .utils_parser import avaliar_patch_file
 from configuration.models import ConfiguracaoFerramenta
 
 def index(request):
@@ -43,7 +43,7 @@ def executar_ferramenta(request):
 			# navega pelo diretório dos arquivos de patch, buscando os arquivos .dsl
 			resultado_processamento_por_arquivo = {}
 			for dirpath, dirnames, files in os.walk(PATH_PATCH_FILES):
-				for file_name in files:
+				for file_name in sorted(files):
 			 		file_full_name = os.path.join(dirpath, file_name)
 			 		try:
 			 			vet_tmp = file_name.split('.')
