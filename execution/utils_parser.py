@@ -241,9 +241,14 @@ def avaliar_instrucao_replace_string(instruction_line, configuracaoferramenta):
 	new_str = vet_tmp2[1].strip('"')
 
 	if code_unit:
-		replace_string_em_unit(file, code_unit, old_str, new_str)
-		print(('file: {}, instruction: {}').format(file, instruction))
-		return('Em implementação')
+		executou_corretamente = replace_string_em_unit(file, code_unit, old_str, new_str)
+		if executou_corretamente:
+			resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+			print(resultado_execucao)
+
+		else:
+			resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+			print(resultado_execucao)
 
 	else:
 		# trata-se de replace string em todo o arquivo
@@ -256,5 +261,5 @@ def avaliar_instrucao_replace_string(instruction_line, configuracaoferramenta):
 			resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
 			print(resultado_execucao)
 
-		return resultado_execucao
+	return resultado_execucao
 

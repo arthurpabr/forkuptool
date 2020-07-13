@@ -143,7 +143,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # definindo diferentes níveis de DEBUG para mensagens de debug de código
 DEBUG_0 = False
-DEBUG_1 = False
+DEBUG_1 = True
 
 LENGTH_INFO_CLIENT = 10000
 
