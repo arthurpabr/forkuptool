@@ -2,7 +2,8 @@ import os
 
 from django.conf import settings
 from .utils_transformer import replace_string_em_arquivo, replace_string_em_unit, \
-	replace_file, rewrite_imports, replace_unit
+	replace_file, rewrite_imports, replace_unit, remove_string_em_unit, \
+	remove_string_em_arquivo
 from .utils_ast import LinesFinder
 
 
@@ -91,9 +92,16 @@ def avaliar_instrucao_remove(instruction_line, configuracaoferramenta):
 			return avaliar_instrucao_remove_unit(instruction_line, configuracaoferramenta)
 
 	else:
-		resultado_execucao = 'ERRO: instrução remove mal formulada'
-		print(resultado_execucao)
-		return resultado_execucao
+		if code_unit.startswith('"'):
+			return avaliar_instrucao_remove_string(instruction_line, configuracaoferramenta)
+
+		elif vet_tmp[2] == 'from':
+			return avaliar_instrucao_remove_string(instruction_line, configuracaoferramenta)
+
+		else:
+			resultado_execucao = 'ERRO: instrução remove mal formulada'
+			print(resultado_execucao)
+			return resultado_execucao
 
 
 
@@ -161,6 +169,61 @@ def avaliar_instrucao_remove_string(instruction_line, configuracaoferramenta):
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
 	instruction = vet_tmp[1]
+	code_unit = None
+
+	if vet_tmp[2] == 'from':
+		code_unit = vet_tmp[3]
+
+	full_string = ''
+	if code_unit:
+		# se informada a unidade de código (unit), a string a ser removida
+		# está representas no vetor original - vet_tmp - a partir da posição 4
+		separator = ' '
+		full_string = separator.join(vet_tmp[4:])
+	else:
+		# caso contrário a string a ser removida está representada no vetor 
+		# original - vet_tmp - a partir da posição 2
+		separator = ' '
+		full_string = separator.join(vet_tmp[2:])
+
+	full_string = full_string.strip('"')
+
+	if code_unit:
+		executou_corretamente = remove_string_em_unit(file, code_unit, full_string)
+		if executou_corretamente:
+			resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+			print(resultado_execucao)
+
+		else:
+			resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+			print(resultado_execucao)
+
+	else:
+		# trata-se de replace string em todo o arquivo
+		executou_corretamente = remove_string_em_arquivo(file, full_string)
+		if executou_corretamente:
+			resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+			print(resultado_execucao)
+
+		else:
+			resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+			print(resultado_execucao)
+
+	return resultado_execucao
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	print(('file: {}, instruction: {}').format(file, instruction))
 	return('Em implementação')
