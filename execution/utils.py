@@ -36,9 +36,20 @@ def encontrar_inicio_e_fim_de_estrutura(nome_arquivo, unit):
 	# utiliza o modo "pytônico" para diferenciar 'classe' de 'função':
 	# - classe iniciada em maiúsculo
 	# - função iniciada em minúsculo
+	# Exceções:
+	# - função iniciada em maiúsculo e terminada em 'Factory'
+	#	- neste caso trata a função como um 'Factory'
 	vet_tmp = unit.split('::')
 	if len(vet_tmp) == 2:
-		return finder.encontrar_inicio_e_fim_de_metodo_em_classe(vet_tmp[1], vet_tmp[0])
+		# exemplo: Classe::metodo ou Factory::Classe
+		if vet_tmp[0].endswith('Factory'):
+			return finder.encontrar_inicio_e_fim_de_classe_em_factory(vet_tmp[1], vet_tmp[0])
+		else:
+			return finder.encontrar_inicio_e_fim_de_metodo_em_classe(vet_tmp[1], vet_tmp[0])
+
+	elif len(vet_tmp) == 3:
+		# exemplo: Factory::Classe::metodo
+		return finder.encontrar_inicio_e_fim_de_metodo_em_classe_em_factory(vet_tmp[2], vet_tmp[1], vet_tmp[0])
 
 	else: 
 		if unit[0].isupper():
