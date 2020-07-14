@@ -1,7 +1,8 @@
 import os
 
 from django.conf import settings
-from .utils_transformer import replace_string_em_arquivo, replace_string_em_unit
+from .utils_transformer import replace_string_em_arquivo, replace_string_em_unit, \
+	replace_file
 
 
 def avaliar_patch_file(nome_arquivo, configuracaoferramenta):
@@ -181,10 +182,26 @@ def avaliar_instrucao_replace_file(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	file_aux = configuracaoferramenta.path_auxiliary_files+vet_tmp[0]
 	instruction = vet_tmp[1]
 
-	print(('file: {}, instruction: {}').format(file, instruction))
-	return('Em implementação')
+	# 1º passo: verifica se o arquivo auxiliar - necessário para esta instrução - existe
+	if not os.path.isfile(file_aux):
+		resultado_execucao = ('ERRO: arquivo auxiliar inexistente: {}').format(file_aux)
+		print(resultado_execucao)
+		return resultado_execucao	
+
+	executou_corretamente = replace_file(file, file_aux)
+
+	if executou_corretamente:
+		resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+		print(resultado_execucao)
+
+	else:
+		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+		print(resultado_execucao)
+
+	return resultado_execucao
 
 
 
@@ -192,8 +209,24 @@ def avaliar_instrucao_replace_unit(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	file_aux = configuracaoferramenta.path_auxiliary_files+vet_tmp[0]
 	instruction = vet_tmp[1]
 	code_unit = vet_tmp[2]
+
+	# 1º passo: verifica se o arquivo auxiliar - necessário para esta instrução - existe
+	if not os.path.isfile(file_aux):
+		resultado_execucao = ('ERRO: arquivo auxiliar inexistente: {}').format(file_aux)
+		print(resultado_execucao)
+		return resultado_execucao
+
+	# 2º passo: PRÉ PROCESSAMENTO obrigatório para esta instrução
+	if not rewrite_imports(file, file_aux, 'both'):
+		resultado_execucao = ('PRÉ PROCESSAMENTO falhou  - arquivo {}').format(file)
+		print(resultado_execucao)
+		return resultado_execucao
+
+
+
 
 	print(('file: {}, instruction: {}').format(file, instruction))
 	return('Em implementação')

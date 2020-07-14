@@ -3,16 +3,7 @@ import subprocess
 
 from django.http import JsonResponse
 from configuration.models import ThreadTask
-
-def ler_conteudo_de_arquivo(nome_arquivo):
-	try:
-		arquivo = open(nome_arquivo, 'r')
-	except IOError:
-		print(('Erro ao tentar abrir o arquivo {}').format(nome_arquivo))
-		return False
-	linhas = arquivo.readlines()
-	arquivo.close()
-	return linhas
+from execution.utils import ler_conteudo_de_arquivo
 
 
 
