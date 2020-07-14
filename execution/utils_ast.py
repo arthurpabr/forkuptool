@@ -3,6 +3,7 @@ import ast
 
 from verbalexpressions import VerEx
 
+
 class LinesFinder():
 
     # construtor; inicializa 1 atributo:
@@ -15,6 +16,20 @@ class LinesFinder():
 				self.tree = ast.parse(source.read())
 			except SyntaxError:
 				print(('Erro de sintaxe no parser do arquivo {}').format(self.nome_arquivo))
+
+	
+	@staticmethod
+	def check_parser_ast(nome_arquivo):
+		ok = True
+		erro = None
+		with open(nome_arquivo, 'r') as source:
+			try:
+				tree = ast.parse(source.read())
+			except Exception as e:
+				erro = str(e.lineno)+' - '+e.msg+' - '+e.text
+				ok = False
+		return [ok,erro]
+
 
 
 	def eh_linha_vazia(self, linha):

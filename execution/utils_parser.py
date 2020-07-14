@@ -2,7 +2,8 @@ import os
 
 from django.conf import settings
 from .utils_transformer import replace_string_em_arquivo, replace_string_em_unit, \
-	replace_file
+	replace_file, rewrite_imports, replace_unit
+from .utils_ast import LinesFinder
 
 
 def avaliar_patch_file(nome_arquivo, configuracaoferramenta):
@@ -219,17 +220,41 @@ def avaliar_instrucao_replace_unit(instruction_line, configuracaoferramenta):
 		print(resultado_execucao)
 		return resultado_execucao
 
-	# 2º passo: PRÉ PROCESSAMENTO obrigatório para esta instrução
-	if not rewrite_imports(file, file_aux, 'both'):
-		resultado_execucao = ('PRÉ PROCESSAMENTO falhou  - arquivo {}').format(file)
+	# 2º passo: verifica se 'file' e 'file_aux' não irão gerar erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('PRÉ PROCESSAMENTO falhou - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
 		print(resultado_execucao)
 		return resultado_execucao
 
+	check_file = LinesFinder.check_parser_ast(file_aux)
+	if not check_file[0]:
+		msg = ('PRÉ PROCESSAMENTO falhou - arquivo {} com erros de parser na AST').format(file_aux)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
 
+	# 3º passo: PRÉ PROCESSAMENTO obrigatório para esta instrução
+	if not rewrite_imports(file, file_aux, 'both'):
+		resultado_execucao = ('PRÉ PROCESSAMENTO falhou - arquivo {}').format(file)
+		print(resultado_execucao)
+		return resultado_execucao
 
+	executou_corretamente = replace_unit(file, file_aux, code_unit)
+	if executou_corretamente:
+		resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+		print(resultado_execucao)
 
-	print(('file: {}, instruction: {}').format(file, instruction))
-	return('Em implementação')
+	else:
+		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+		print(resultado_execucao)
+
+	return resultado_execucao
 
 
 
