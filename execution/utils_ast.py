@@ -155,6 +155,24 @@ class LinesFinder():
 
 
 
+	def encontrar_inicio_e_fim_de_classe_em_classe(self, nome_classemetodo, nome_classe):
+		noh_classe = None
+		analyzer = Analyzer()
+		analyzer.visit(self.tree)
+		# busca pelo nó correspondente à classe passada como parâmetro
+		noh_classe = analyzer.get_nohClassDef(nome_classe)
+		if not noh_classe:
+			return None
+		# busca pela final da classe, necessária no cálculo da linha final do método
+		linha_inicial_final_da_classe = self.encontrar_inicio_e_fim_de_classe(nome_classe)
+		if not linha_inicial_final_da_classe:
+			return None
+		linha_final_da_classe = linha_inicial_final_da_classe[1]
+		# encontrado o nó da classe, busca pelo nó do método dentro da subárvore da classe
+		return self.encontrar_inicio_e_fim_de_noh_ast(noh_classe, ast.ClassDef, nome_classemetodo, linha_final_da_classe)
+
+
+
 	# retorna o nº das linhas de início e fim da função indicada no arquivo indicado (nº de linhas iniciando em 1)
 	def encontrar_inicio_e_fim_de_noh_ast(self, arvore_de_busca, tipo_do_noh, nome_da_estrutura, delimitador_linha_final = 0): 
 		linha_inicio = None

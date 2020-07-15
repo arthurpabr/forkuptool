@@ -272,6 +272,7 @@ def remove_unit(nome_arquivo, unit):
 	return escrever_conteudo_em_arquivo(nome_arquivo, novo_conteudo)
 
 
+
 def add_unit(nome_arquivo, nome_arquivo_auxiliar, unit, unit_ref, position_ref):
 	inicio_e_fim = encontrar_inicio_e_fim_de_estrutura(nome_arquivo_auxiliar, unit)
 	if inicio_e_fim is None:

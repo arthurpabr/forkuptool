@@ -39,11 +39,16 @@ def encontrar_inicio_e_fim_de_estrutura(nome_arquivo, unit):
 	# Exceções:
 	# - função iniciada em maiúsculo e terminada em 'Factory'
 	#	- neste caso trata a função como um 'Factory'
+	# - classe dentro de outra classe como se fosse um método
+	#	- ex.: classe Meta
+
 	vet_tmp = unit.split('::')
 	if len(vet_tmp) == 2:
-		# exemplo: Classe::metodo ou Factory::Classe
+		# exemplo: Classe::metodo ou Factory::Classe ou Classe::Classe
 		if vet_tmp[0].endswith('Factory'):
 			return finder.encontrar_inicio_e_fim_de_classe_em_factory(vet_tmp[1], vet_tmp[0])
+		elif vet_tmp[1] == 'Meta':
+			return finder.encontrar_inicio_e_fim_de_classe_em_classe(vet_tmp[1], vet_tmp[0])
 		else:
 			return finder.encontrar_inicio_e_fim_de_metodo_em_classe(vet_tmp[1], vet_tmp[0])
 
