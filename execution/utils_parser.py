@@ -143,8 +143,15 @@ def avaliar_instrucao_add_annotation(instruction_line, configuracaoferramenta):
 def avaliar_instrucao_add_unit(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
+
+	# 0 passo: verifica se a quantidade de parâmetros esperados está correta
+	if len(vet_tmp) < 5:
+		resultado_execucao = ('ERRO: instrução add unit mal formulada')
+		print(resultado_execucao)
+		return resultado_execucao
+
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
-	file_aux = configuracaoferramenta.path_auxiliary_files+vet_tmp[0]	
+	file_aux = configuracaoferramenta.path_auxiliary_files+vet_tmp[0]
 	instruction = vet_tmp[1]
 	code_unit = vet_tmp[2]
 	position_ref = vet_tmp[3]

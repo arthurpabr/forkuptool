@@ -299,7 +299,7 @@ def add_unit(nome_arquivo, nome_arquivo_auxiliar, unit, unit_ref, position_ref):
 	if inicio is None or fim is None:
 		print(('Unidade de código {} NÃO ENCONTRADA no arquivo {} ').format(unit_ref, nome_arquivo))
 		return False
-
+	
  	# monta as novas linhas para o arquivo de destino
  	# abre o arquivo para leitura
 	linhas = ler_conteudo_de_arquivo(nome_arquivo)
@@ -313,7 +313,7 @@ def add_unit(nome_arquivo, nome_arquivo_auxiliar, unit, unit_ref, position_ref):
 	trecho_2 = quebra_linha + nova_unit + quebra_linha
 	if position_ref == 'before':
 		trecho_1 = linhas[0:(inicio-1)]
-		trecho_3 = linhas[inicio:]
+		trecho_3 = linhas[(inicio-1):]
 	else:
 		trecho_1 = linhas[0:fim]
 		trecho_3 = linhas[fim:]
