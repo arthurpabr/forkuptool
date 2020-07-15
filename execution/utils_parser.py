@@ -3,7 +3,7 @@ import os
 from django.conf import settings
 from .utils_transformer import replace_string_em_arquivo, replace_string_em_unit, \
 	replace_file, rewrite_imports, replace_unit, remove_string_em_unit, \
-	remove_string_em_arquivo, remove_unit
+	remove_string_em_arquivo, remove_unit, add_unit
 from .utils_ast import LinesFinder
 
 
@@ -144,11 +144,57 @@ def avaliar_instrucao_add_unit(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	file_aux = configuracaoferramenta.path_auxiliary_files+vet_tmp[0]	
 	instruction = vet_tmp[1]
 	code_unit = vet_tmp[2]
+	position_ref = vet_tmp[3]
+	code_unit_ref = vet_tmp[4]
 
-	print(('file: {}, instruction: {}').format(file, instruction))
-	return('Em implementação')
+	# 1º passo: verifica se o arquivo auxiliar - necessário para esta instrução - existe
+	if not os.path.isfile(file_aux):
+		resultado_execucao = ('ERRO: arquivo auxiliar inexistente: {}').format(file_aux)
+		print(resultado_execucao)
+		return resultado_execucao
+
+	# 2º passo: verifica se 'file' e 'file_aux' não irão gerar erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('PRÉ PROCESSAMENTO falhou - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
+	check_file = LinesFinder.check_parser_ast(file_aux)
+	if not check_file[0]:
+		msg = ('PRÉ PROCESSAMENTO falhou - arquivo {} com erros de parser na AST').format(file_aux)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
+	# 3º passo: PRÉ PROCESSAMENTO obrigatório para esta instrução
+	if not rewrite_imports(file, file_aux, 'both'):
+		resultado_execucao = ('PRÉ PROCESSAMENTO falhou - arquivo {}').format(file)
+		print(resultado_execucao)
+		return resultado_execucao
+
+	# 4º passo: verifica se a referência de posicionamento é válida
+	if position_ref != 'before' and position_ref != 'after':
+		resultado_execucao = ('Instrução add unit mal formulada - posição {} inválida').format(position_ref)
+		print(resultado_execucao)
+		return resultado_execucao		
+
+	executou_corretamente = add_unit(file, file_aux, code_unit, code_unit_ref, position_ref)
+	if executou_corretamente:
+		resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+		print(resultado_execucao)
+
+	else:
+		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+		print(resultado_execucao)
 
 
 
