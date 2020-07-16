@@ -65,6 +65,12 @@ def encontrar_inicio_e_fim_de_estrutura(nome_arquivo, unit):
 
 
 
+def encontrar_inicio_e_fim_de_annotation(nome_arquivo, annotation, unit_ref): 
+	finder = LinesFinder(nome_arquivo)
+	return finder.encontrar_inicio_e_fim_de_annotation(annotation, unit_ref)
+
+
+
 # recebe linhas de início e fim no arquivo com nº de linhas iniciando em 1;
 # devolve a fatia correspondente (tratando o índice da lista de linhas, que inicia em zero)
 def get_slice_file(nome_arquivo, inicio_e_fim_da_fatia):

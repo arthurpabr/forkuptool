@@ -62,7 +62,7 @@ class LinesFinder():
 		return [linha_inicio,linha_fim]
 
 
-	def encontrar_inicio_e_fim_de_annotation(self, nome_funcao, nome_annotation):
+	def encontrar_inicio_e_fim_de_annotation(self, nome_annotation, nome_funcao):
 		linha_inicio = None
 		linha_fim = None
 
@@ -72,7 +72,7 @@ class LinesFinder():
 		noh_alvo = None
 		analyzer = Analyzer()
 		analyzer.visit(self.tree)
-		noh_alvo = analyzer.get_nohAnnotation(nome_funcao, nome_annotation)
+		noh_alvo = analyzer.get_nohAnnotation(nome_funcao, nome_annotation.replace('@',''))
 
 		if noh_alvo:
 			linha_inicio = noh_alvo.lineno

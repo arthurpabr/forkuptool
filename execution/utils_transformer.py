@@ -2,7 +2,7 @@ import subprocess
 
 from .utils import ler_conteudo_de_arquivo, escrever_conteudo_em_arquivo, \
 	encontrar_inicio_e_fim_de_estrutura, get_slice_file, get_nohs, to_string_nohs, \
-	rewrite_bloco_imports
+	rewrite_bloco_imports, encontrar_inicio_e_fim_de_annotation
 
 
 def rewrite_imports(nome_arquivo, nome_arquivo_auxiliar, where):
@@ -259,6 +259,33 @@ def remove_unit(nome_arquivo, unit):
 		return False
 
  	# monta as novas linhas para o arquivo de destino, retirando o trecho referente à unit
+ 	# abre o arquivo para leitura
+	linhas = ler_conteudo_de_arquivo(nome_arquivo)
+	if not linhas:
+		print(('Erro ao tentar ler conteúdo do arquivo {}').format(nome_arquivo))
+		return False
+	trecho_1 = linhas[0:(inicio-1)]
+	trecho_3 = linhas[fim:]
+
+	novo_conteudo = trecho_1 + trecho_3
+ 	# abre novamente o arquivo, agora para escrita, escrevendo o novo conteúdo
+	return escrever_conteudo_em_arquivo(nome_arquivo, novo_conteudo)
+
+
+
+def remove_annotation(nome_arquivo, annotation, unit_ref):
+	inicio_e_fim = encontrar_inicio_e_fim_de_annotation(nome_arquivo, annotation, unit_ref)
+	if inicio_e_fim is None:
+		print(('Annotation {} da unidade de código {} NÃO ENCONTRADA no arquivo {} ').format(annotation, unit_ref, nome_arquivo))
+		return False
+
+	inicio = inicio_e_fim[0]
+	fim = inicio_e_fim[1]
+	if inicio is None or fim is None:
+		print(('Annotation {} da unidade de código {} NÃO ENCONTRADA no arquivo {} ').format(annotation, unit_ref, nome_arquivo))
+		return False
+
+ 	# monta as novas linhas para o arquivo de destino, retirando o trecho referente à annotation
  	# abre o arquivo para leitura
 	linhas = ler_conteudo_de_arquivo(nome_arquivo)
 	if not linhas:

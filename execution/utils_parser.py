@@ -3,7 +3,7 @@ import os
 from django.conf import settings
 from .utils_transformer import replace_string_em_arquivo, replace_string_em_unit, \
 	replace_file, rewrite_imports, replace_unit, remove_string_em_unit, \
-	remove_string_em_arquivo, remove_unit, add_unit
+	remove_string_em_arquivo, remove_unit, add_unit, remove_annotation
 from .utils_ast import LinesFinder
 
 
@@ -210,10 +210,17 @@ def avaliar_instrucao_remove_annotation(instruction_line, configuracaoferramenta
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
 	instruction = vet_tmp[1]
-	code_unit = vet_tmp[2]
+	annotation = vet_tmp[2]
+	code_unit_ref = vet_tmp[4]
 
-	print(('file: {}, instruction: {}').format(file, instruction))
-	return('Em implementação')
+	executou_corretamente = remove_annotation(file, annotation, code_unit_ref)
+	if executou_corretamente:
+		resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+		print(resultado_execucao)
+
+	else:
+		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+		print(resultado_execucao)
 
 
 
