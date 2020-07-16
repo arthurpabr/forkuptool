@@ -251,124 +251,137 @@ class Analyzer(ast.NodeVisitor):
     # - um dicionário que guarda NOMES de nós to tipo 'ImportFrom'
     # - uma lista que guarda os NÓS do tipo 'FunctionDef'
     # - uma lista que guarda os NÓS do tipo 'ClassDef'
-    def __init__(self):
-        self.nohs_import = []
-        self.nohs_import_from = {}
-        self.nohs_function_def = []
-        self.nohs_class_def = []
+	def __init__(self):
+		self.nohs_import = []
+		self.nohs_import_from = {}
+		self.nohs_function_def = []
+		self.nohs_class_def = []
 
 
     # analisa só linhas de "import"
-    def visit_Import(self, node):
-        for alias in node.names:
-            if alias.asname:
-                self.nohs_import.append(alias.name+' as '+alias.asname)
-            else:
-                self.nohs_import.append(alias.name)
-        self.generic_visit(node)
+	def visit_Import(self, node):
+		for alias in node.names:
+			if alias.asname:
+				self.nohs_import.append(alias.name+' as '+alias.asname)
+			else:
+				self.nohs_import.append(alias.name)
+		self.generic_visit(node)
 
 
     # analisa só linhas de "from ... import"
-    def visit_ImportFrom(self, node):
-        if node.module not in self.nohs_import_from:
-            self.nohs_import_from[node.module] = []
+	def visit_ImportFrom(self, node):
+		if node.module not in self.nohs_import_from:
+			self.nohs_import_from[node.module] = []
 
-        for alias in node.names:
-            str_name = ''
-            if alias.asname:
-                str_name = alias.name+' as '+alias.asname
-            else:
-                str_name = alias.name
-            if str_name not in self.nohs_import_from[node.module]:
-                self.nohs_import_from[node.module].append(str_name)
-        self.generic_visit(node)
+		for alias in node.names:
+			str_name = ''
+			if alias.asname:
+				str_name = alias.name+' as '+alias.asname
+			else:
+				str_name = alias.name
+			if str_name not in self.nohs_import_from[node.module]:
+				self.nohs_import_from[node.module].append(str_name)
+		self.generic_visit(node)
 
 
     # analisa definições de funções
-    def visit_FunctionDef(self, node):
-        if node not in self.nohs_function_def:
-            self.nohs_function_def.append(node)
-        self.generic_visit(node)
+	def visit_FunctionDef(self, node):
+		if node not in self.nohs_function_def:
+			self.nohs_function_def.append(node)
+		self.generic_visit(node)
 
 
 	# analisa definições de classes
-    def visit_ClassDef(self, node):
-        if node not in self.nohs_class_def:
-            self.nohs_class_def.append(node)
-        self.generic_visit(node)
+	def visit_ClassDef(self, node):
+		if node not in self.nohs_class_def:
+			self.nohs_class_def.append(node)
+		self.generic_visit(node)
 
 
     # imprime os atributos em tela
-    def report(self):
-        pprint(self.nohs_import)
-        pprint(self.nohs_import_from)
+	def report(self):
+		pprint(self.nohs_import)
+		pprint(self.nohs_import_from)
 
 
     # retorna os nós do tipo informado
-    def get_nohs(self, tipo):
-        if tipo == 'import':
-            return self.nohs_import
+	def get_nohs(self, tipo):
+		if tipo == 'import':
+			return self.nohs_import
 
-        elif tipo == 'import_from':
-            return self.nohs_import_from
+		elif tipo == 'import_from':
+			return self.nohs_import_from
 
-        else:
-            return None
+		else:
+			return None
 
 
 	# retorna o nó correspondente à função do nome informado como parâmetro
 	# CUIDADO! Se houver mais de uma definição de função com mesmo nome, vai retornar apenas 
 	# a 1ª ocorrência da função dentro da AST do arquivo analisado
-    def get_nohFunctionDef(self, nome_funcao):
-    	noh = None
-    	for n in self.nohs_function_def:
-    		if n.name == nome_funcao:
-    			noh = n
-    			break
-    	return noh
+	def get_nohFunctionDef(self, nome_funcao):
+		noh = None
+		for n in self.nohs_function_def:
+			if n.name == nome_funcao:
+				noh = n
+				break
+		return noh
 
 
 	# retorna o nó correspondente à classe do nome informado como parâmetro
 	# CUIDADO! Se houver mais de uma definição de classe com mesmo nome, vai retornar apenas 
 	# a 1ª ocorrência da classe dentro da AST do arquivo analisado
-    def get_nohClassDef(self, nome_classe):
-    	noh = None
-    	for n in self.nohs_class_def:
-    		if n.name == nome_classe:
-    			noh = n
-    			break
-    	return noh
+	def get_nohClassDef(self, nome_classe):
+		noh = None
+		for n in self.nohs_class_def:
+			if n.name == nome_classe:
+				noh = n
+				break
+		return noh
 
 
 
 	# retorna o nó correspondente à annotation do nome informado na função informada
-    def get_nohAnnotation(self, nome_funcao, nome_annotation):
-        noh = None
-        noh_funcao = self.get_nohFunctionDef(nome_funcao)
-        if noh_funcao:
-            if 'decorator_list' in noh_funcao.__dict__:
-                for n in noh_funcao.decorator_list:
-                    if isinstance(n, ast.Name):
-                        if 'id' in n.__dict__:
-                            if n.id == nome_annotation:
-                                noh = n
+	def get_nohAnnotation(self, nome_funcao, nome_annotation):
+		noh = None
+		noh_funcao = self.get_nohFunctionDef(nome_funcao)
+		if noh_funcao:
+			if 'decorator_list' in noh_funcao.__dict__:
+				for n in noh_funcao.decorator_list:
+					if isinstance(n, ast.Name):
+						if 'id' in n.__dict__:
+							if n.id == nome_annotation:
+								noh = n
 
-                    if isinstance(n, ast.Call):
-                        if 'func' in n.__dict__:
-                            n2 = n.func
+					if isinstance(n, ast.Call):
+						if 'func' in n.__dict__:
+							n2 = n.func
 
-                            if isinstance(n2, ast.Attribute):
-                                n3 = n2.value
+							if isinstance(n2, ast.Attribute):
+								nome_para_comparar = ''
+								n3 = n2.value
 
-                                if isinstance(n3, ast.Name):
-                                    if 'id' in n3.__dict__:
-                                        if n3.id == nome_annotation:
-                                            noh = n	
+								if isinstance(n3, ast.Name):
+									if 'id' in n3.__dict__:
+										nome_para_comparar+= n3.id
+										if 'attr' in n2.__dict__:
+											nome_para_comparar+='.'+n2.attr
+										if nome_para_comparar == nome_annotation:
+											noh = n	
 
-                            if isinstance(n2, ast.Name):
-                                if 'id' in n2.__dict__:
-                                    if n2.id == nome_annotation:
-                                        noh = n
+							if isinstance(n2, ast.Name):
+								if 'id' in n2.__dict__:
+									if n2.id == nome_annotation:
+										noh = n
 
-        return noh
+					if isinstance(n, ast.Attribute):
+						nome_para_comparar = ''
+						nome_para_comparar+= n.value.id
+						if 'attr' in n.__dict__:
+							nome_para_comparar+='.'+n.attr
+						if nome_para_comparar == nome_annotation:
+							noh = n
+
+		return noh
+
 
