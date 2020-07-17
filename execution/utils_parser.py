@@ -32,6 +32,12 @@ def avaliar_patch_file(nome_arquivo, configuracaoferramenta):
 def avaliar_instrucao(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
+
+	if len(vet_tmp) < 2:
+		resultado_execucao = ('ERRO: instrução {} mal formulada').format(instruction_line)
+		print(resultado_execucao)
+		return resultado_execucao
+
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
 	instruction = vet_tmp[1]
 
@@ -133,6 +139,17 @@ def avaliar_instrucao_add_annotation(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	# passo 0: verifica se 'file' não gera erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('ERRO DE PARSER - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
 	instruction = vet_tmp[1]
 	annotation = vet_tmp[2]
 	# da posição 3 em diante estarão representados os demais parâmetros, 
@@ -258,6 +275,17 @@ def avaliar_instrucao_remove_annotation(instruction_line, configuracaoferramenta
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	# passo 0: verifica se 'file' não gera erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('ERRO DE PARSER - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
 	instruction = vet_tmp[1]
 	annotation = vet_tmp[2]
 	code_unit_ref = vet_tmp[4]
@@ -277,6 +305,17 @@ def avaliar_instrucao_remove_string(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	# passo 0: verifica se 'file' não gera erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('ERRO DE PARSER - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
 	instruction = vet_tmp[1]
 	code_unit = None
 
@@ -326,6 +365,17 @@ def avaliar_instrucao_remove_unit(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	# passo 0: verifica se 'file' não gera erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('ERRO DE PARSER - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
 	instruction = vet_tmp[1]
 	code_unit = vet_tmp[2]
 
@@ -423,6 +473,17 @@ def avaliar_instrucao_replace_annotation(instruction_line, configuracaoferrament
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	# passo 0: verifica se 'file' não gera erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('ERRO DE PARSER - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
 	instruction = vet_tmp[1]
 	code_unit = vet_tmp[2]
 
@@ -435,6 +496,17 @@ def avaliar_instrucao_replace_string(instruction_line, configuracaoferramenta):
 	resultado_execucao = ''
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
+	# passo 0: verifica se 'file' não gera erros de 
+	# parser ao arregar a AST dos arquivos (problema ref. incompatibilidades entre
+	# python 2.7 e python 3.x)
+	check_file = LinesFinder.check_parser_ast(file)
+	if not check_file[0]:
+		msg = ('ERRO DE PARSER - arquivo {} com erros de parser na AST').format(file)
+		msg+= ('\nErro na linha {} com erros de parser na AST\n').format(check_file[1])
+		resultado_execucao = msg
+		print(resultado_execucao)
+		return resultado_execucao
+
 	instruction = vet_tmp[1]
 	code_unit = None
 
