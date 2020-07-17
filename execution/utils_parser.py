@@ -3,7 +3,8 @@ import os
 from django.conf import settings
 from .utils_transformer import replace_string_em_arquivo, replace_string_em_unit, \
 	replace_file, rewrite_imports, replace_unit, remove_string_em_unit, \
-	remove_string_em_arquivo, remove_unit, add_unit, remove_annotation
+	remove_string_em_arquivo, remove_unit, add_unit, remove_annotation, \
+	add_annotation
 from .utils_ast import LinesFinder
 
 
@@ -133,7 +134,55 @@ def avaliar_instrucao_add_annotation(instruction_line, configuracaoferramenta):
 	vet_tmp = instruction_line.split(' ')
 	file = configuracaoferramenta.path_vendor+vet_tmp[0]
 	instruction = vet_tmp[1]
-	code_unit = vet_tmp[2]
+	annotation = vet_tmp[2]
+	# da posição 3 em diante estarão representados os demais parâmetros, 
+	# mas com tamanho arbitrário já que no Json podem haver n espaços;
+	# é necessário reconstruir os parâmetros
+	separator = ' '
+	part_instruction = ''
+	part_instruction = separator.join(vet_tmp[3:])
+	# a string utilizada para separar o Json dos demais parâmetros foi 
+	# definida empiricamente e é representada abaixo
+	separator = '} to '
+	vet_tmp = part_instruction.split(separator)
+	str_json = vet_tmp[0]+'}'
+	# remonta novamente os parâmetros restantes
+	separator = ' '
+	part_instruction = ''
+	part_instruction = separator.join(vet_tmp[1:])
+	vet_tmp = part_instruction.split(' ')
+	code_unit_to = vet_tmp[0]
+	position_ref = None
+	annotation_ref = None
+	if(len(vet_tmp) == 3):
+		position_ref = vet_tmp[1]
+		annotation_ref = vet_tmp[2]
+
+	if position_ref:
+		# verifica se a referência de posicionamento é válida
+		if position_ref != 'before' and position_ref != 'after':
+			resultado_execucao = ('Instrução add @annotation mal formulada - posição {} inválida').format(position_ref)
+			print(resultado_execucao)
+			return resultado_execucao
+
+		# se informada um posicionamento de referência, deve existir obrigatoriamente
+		# uma annotation de referência
+		if not annotation_ref:
+			resultado_execucao = ('Instrução add @annotation mal formulada - annotation de referência não informada')
+			print(resultado_execucao)
+			return resultado_execucao
+
+	executou_corretamente = add_annotation(file, annotation, str_json, code_unit_to, position_ref, annotation_ref)
+	if executou_corretamente:
+		resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+		print(resultado_execucao)
+
+	else:
+		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+		print(resultado_execucao)
+
+
+
 
 	print(('file: {}, instruction: {}').format(file, instruction))
 	return('Em implementação')
@@ -192,7 +241,7 @@ def avaliar_instrucao_add_unit(instruction_line, configuracaoferramenta):
 	if position_ref != 'before' and position_ref != 'after':
 		resultado_execucao = ('Instrução add unit mal formulada - posição {} inválida').format(position_ref)
 		print(resultado_execucao)
-		return resultado_execucao		
+		return resultado_execucao
 
 	executou_corretamente = add_unit(file, file_aux, code_unit, code_unit_ref, position_ref)
 	if executou_corretamente:

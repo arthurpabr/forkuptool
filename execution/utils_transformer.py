@@ -1,4 +1,5 @@
 import subprocess
+import json
 
 from .utils import ler_conteudo_de_arquivo, escrever_conteudo_em_arquivo, \
 	encontrar_inicio_e_fim_de_estrutura, get_slice_file, get_nohs, to_string_nohs, \
@@ -345,6 +346,80 @@ def add_unit(nome_arquivo, nome_arquivo_auxiliar, unit, unit_ref, position_ref):
 		trecho_1 = linhas[0:fim]
 		trecho_3 = linhas[fim:]
 
+	novo_conteudo = trecho_1 + trecho_2 + trecho_3
+ 	# abre novamente o arquivo, agora para escrita, escrevendo o novo conteúdo
+	return escrever_conteudo_em_arquivo(nome_arquivo, novo_conteudo)
+
+
+
+def add_annotation(nome_arquivo, annotation, str_json, unit_to, position_ref, annotation_ref):
+	inicio = None
+	fim = None
+	if position_ref and annotation_ref:
+		# se informada uma anotação de ref. para posicionamento, busca a posição da mesma
+	 	# obtém o início e fim da annotation de referência no arquivo de destino
+		inicio_e_fim = encontrar_inicio_e_fim_de_annotation(nome_arquivo, annotation_ref, unit_to)
+		if inicio_e_fim is None:
+			print(('Annotation {} da unidade de código {} NÃO ENCONTRADA no arquivo {} ').format(annotation_ref, unit_to, nome_arquivo))
+			return False
+
+		inicio = inicio_e_fim[0]
+		fim = inicio_e_fim[1]
+		if inicio is None or fim is None:
+			print(('Annotation {} da unidade de código {} NÃO ENCONTRADA no arquivo {} ').format(annotation_ref, unit_to, nome_arquivo))
+			return False
+
+	else:
+		# se NÃO informada uma anotação de ref. para posicionamento, busca a posição de início
+	 	# da unidade de código destino no arquivo de destino
+		inicio_e_fim = encontrar_inicio_e_fim_de_estrutura(nome_arquivo, unit_to)
+		if inicio_e_fim is None:
+			print(('Unidade de código {} NÃO ENCONTRADA no arquivo {} ').format(unit_to, nome_arquivo))
+			return False
+
+		inicio = inicio_e_fim[0]
+		fim = inicio_e_fim[1]
+		if inicio is None or fim is None:
+			print(('Unidade de código {} NÃO ENCONTRADA no arquivo {} ').format(unit_to, nome_arquivo))
+			return False
+
+	trecho_annotation = ''
+	trecho_annotation+= annotation
+	json_code = json.loads(str_json)
+	if json_code['args'] == '' and json_code['as_function_call']:
+		# annotation com '()' sem argumentos
+		trecho_annotation+= '()'
+	else:
+		trecho_annotation+= '('
+		trecho_annotation+= json_code['args']
+		trecho_annotation+= ')'
+
+	# monta as novas linhas para o arquivo de destino
+ 	# abre o arquivo para leitura
+	linhas = ler_conteudo_de_arquivo(nome_arquivo)
+	if not linhas:
+		print(('Erro ao tentar ler conteúdo do arquivo {}').format(nome_arquivo))
+		return False
+
+	# se houver referência de posicionamento, a nova annotation é inserida 
+	# na linha (início -1) se 'before' ou '(fim+1) se 'after';
+	# se não houver, a nova annotation é inserida na linha (início-1)
+	if position_ref == 'before':
+		# início ou fim são posicionamentos da annotation de ref.
+		trecho_1 = linhas[0:(inicio-1)]
+		trecho_3 = linhas[(inicio-1):]
+
+	elif position_ref == 'after':
+		trecho_1 = linhas[0:fim]
+		trecho_3 = linhas[fim:]
+
+	else:
+		# início ou fim são posicionamentos da unit de destino
+		trecho_1 = linhas[0:(inicio-1)]
+		trecho_3 = linhas[(inicio-1):]
+	
+	quebra_linha = ['\n',]
+	trecho_2 = [trecho_annotation,] + quebra_linha
 	novo_conteudo = trecho_1 + trecho_2 + trecho_3
  	# abre novamente o arquivo, agora para escrita, escrevendo o novo conteúdo
 	return escrever_conteudo_em_arquivo(nome_arquivo, novo_conteudo)
