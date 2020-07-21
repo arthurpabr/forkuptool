@@ -175,6 +175,48 @@ class LinesFinder():
 
 	# retorna o nº das linhas de início e fim da função indicada no arquivo indicado (nº de linhas iniciando em 1)
 	def encontrar_inicio_e_fim_de_noh_ast(self, arvore_de_busca, tipo_do_noh, nome_da_estrutura, delimitador_linha_final = 0): 
+		#passo 0: monta uma lista de nós de interesse
+		contador = 0
+		contador_tmp = 0
+		nohs_de_interesse = []
+		achou_primeira_classe_ou_funcao = False
+		for n in arvore_de_busca:
+    ...:     if not achou_primeira_classe_ou_funcao and (isinstance(n, ast.FunctionDef) or isinstance(n, ast.ClassDef)): 
+    ...:         achou_primeira_funcao_ou_classe = True 
+    ...:     contador += 1 
+    ...:     print(('Noh posicao {} - {}').format(n, contador)) 
+    ...:     if achou_primeira_classe_ou_funcao: 
+    ...:         contador_tmp = contador 
+    ...:         if contador_tmp < len(arvore_de_busca): 
+    ...:             if (contador_tmp -1) == len(arvore_de_busca):
+    ...:                 noh_de_interesse = (n, n.lineno, 'final do arquivo') 
+    ...:             else: 
+    ...:                 proximo_irmao = arvore_de_busca[contador] 
+    ...:                 while not(isinstance(proximo_irmao, ast.FunctionDef) or isinstance(proximo_irmao, ast.ClassDef)): 
+    ...:                     contador_tmp += 1 
+    ...:                     proximo_irmao = arvore_de_busca[contador_tmp] 
+    ...:                 noh_de_interesse = (n, n.lineno, proximo_irmao.lineno-1) 
+    ...:             nohs_de_interesse.append(noh_de_interesse)
+In [36]: # abre novamente o arquivo, para contar o número de linhas e guardá-las para uso futuro, se necessário 
+    ...: try: 
+    ...:     arquivo = open(nome_arquivo, 'r') 
+    ...: except IOError: 
+    ...:     print(('Erro ao tentar abrir o arquivo {}').format(nome_arquivo)) 
+    ...: linhas = arquivo.readlines() 
+    ...: arquivo.close() 
+
+ noh_de_interesse = (arvore_de_busca[len(arvore_de_busca)-1], arvore_de_busca[len(arvore_de_busca)-1].lineno, len(linhas)) 
+
+
+
+
+
+
+
+
+
+
+
 		linha_inicio = None
 		linha_fim = None
 		if not arvore_de_busca:
