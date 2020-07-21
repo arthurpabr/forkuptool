@@ -57,7 +57,11 @@ def encontrar_inicio_e_fim_de_estrutura(nome_arquivo, unit):
 		return finder.encontrar_inicio_e_fim_de_metodo_em_classe_em_factory(vet_tmp[2], vet_tmp[1], vet_tmp[0])
 
 	else: 
-		if unit[0].isupper():
+		if unit.endswith('Factory'):
+			# apesar de começar com maiúsculo, é uma função
+			return finder.encontrar_inicio_e_fim_de_funcao(unit)
+
+		elif unit[0].isupper():
 			return finder.encontrar_inicio_e_fim_de_classe(unit)
 
 		else:

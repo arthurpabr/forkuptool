@@ -88,10 +88,12 @@ class LinesFinder():
 
 
 	def encontrar_inicio_e_fim_de_funcao(self, nome_funcao):
+		print('Entrou em encontrar_inicio_e_fim_de_funcao')
 		return self.encontrar_inicio_e_fim_de_noh_ast(self.tree, ast.FunctionDef, nome_funcao)
 
 
 	def encontrar_inicio_e_fim_de_classe(self, nome_classe):
+		print('Entrou em encontrar_inicio_e_fim_de_classe')
 		return self.encontrar_inicio_e_fim_de_noh_ast(self.tree, ast.ClassDef, nome_classe)
 
 
@@ -197,7 +199,6 @@ class LinesFinder():
 							proximo_irmao = arvore_de_busca.body[contador_tmp]
 						noh_de_interesse = (n, n.lineno, proximo_irmao.lineno-1)
 					nohs_de_interesse.append(noh_de_interesse)
-		#import ipdb;ipdb.set_trace()
 		# abre o arquivo, para contar o número de linhas e guardá-las para uso futuro, se necessário 
 		try: 
 			arquivo = open(self.nome_arquivo, 'r') 
@@ -206,7 +207,6 @@ class LinesFinder():
 		linhas = arquivo.readlines() 
 		arquivo.close() 
 		noh_de_interesse = (arvore_de_busca.body[len(arvore_de_busca.body)-1], arvore_de_busca.body[len(arvore_de_busca.body)-1].lineno, len(linhas))
-
 
 		linha_inicio = None
 		linha_fim = None
