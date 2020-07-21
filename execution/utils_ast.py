@@ -180,58 +180,44 @@ class LinesFinder():
 		contador_tmp = 0
 		nohs_de_interesse = []
 		achou_primeira_classe_ou_funcao = False
-		for n in arvore_de_busca:
-    ...:     if not achou_primeira_classe_ou_funcao and (isinstance(n, ast.FunctionDef) or isinstance(n, ast.ClassDef)): 
-    ...:         achou_primeira_funcao_ou_classe = True 
-    ...:     contador += 1 
-    ...:     print(('Noh posicao {} - {}').format(n, contador)) 
-    ...:     if achou_primeira_classe_ou_funcao: 
-    ...:         contador_tmp = contador 
-    ...:         if contador_tmp < len(arvore_de_busca): 
-    ...:             if (contador_tmp -1) == len(arvore_de_busca):
-    ...:                 noh_de_interesse = (n, n.lineno, 'final do arquivo') 
-    ...:             else: 
-    ...:                 proximo_irmao = arvore_de_busca[contador] 
-    ...:                 while not(isinstance(proximo_irmao, ast.FunctionDef) or isinstance(proximo_irmao, ast.ClassDef)): 
-    ...:                     contador_tmp += 1 
-    ...:                     proximo_irmao = arvore_de_busca[contador_tmp] 
-    ...:                 noh_de_interesse = (n, n.lineno, proximo_irmao.lineno-1) 
-    ...:             nohs_de_interesse.append(noh_de_interesse)
-In [36]: # abre novamente o arquivo, para contar o número de linhas e guardá-las para uso futuro, se necessário 
-    ...: try: 
-    ...:     arquivo = open(nome_arquivo, 'r') 
-    ...: except IOError: 
-    ...:     print(('Erro ao tentar abrir o arquivo {}').format(nome_arquivo)) 
-    ...: linhas = arquivo.readlines() 
-    ...: arquivo.close() 
-
- noh_de_interesse = (arvore_de_busca[len(arvore_de_busca)-1], arvore_de_busca[len(arvore_de_busca)-1].lineno, len(linhas)) 
-
-
-
-
-
-
-
-
-
+		for n in arvore_de_busca.body:
+			if not achou_primeira_classe_ou_funcao and (isinstance(n, ast.FunctionDef) or isinstance(n, ast.ClassDef)):
+				achou_primeira_classe_ou_funcao = True
+			contador += 1
+			#print(('Noh posicao {} - {}').format(n, contador)) 
+			if achou_primeira_classe_ou_funcao: 
+				contador_tmp = contador 
+				if contador_tmp < len(arvore_de_busca.body): 
+					if (contador_tmp -1) == len(arvore_de_busca.body):
+						noh_de_interesse = (n, n.lineno, 'final do arquivo') 
+					else: 
+						proximo_irmao = arvore_de_busca.body[contador] 
+						while not(isinstance(proximo_irmao, ast.FunctionDef) or isinstance(proximo_irmao, ast.ClassDef)):
+							contador_tmp += 1
+							proximo_irmao = arvore_de_busca.body[contador_tmp]
+						noh_de_interesse = (n, n.lineno, proximo_irmao.lineno-1)
+					nohs_de_interesse.append(noh_de_interesse)
+		#import ipdb;ipdb.set_trace()
+		# abre o arquivo, para contar o número de linhas e guardá-las para uso futuro, se necessário 
+		try: 
+			arquivo = open(self.nome_arquivo, 'r') 
+		except IOError: 
+			print(('Erro ao tentar abrir o arquivo {}').format(self.nome_arquivo)) 
+		linhas = arquivo.readlines() 
+		arquivo.close() 
+		noh_de_interesse = (arvore_de_busca.body[len(arvore_de_busca.body)-1], arvore_de_busca.body[len(arvore_de_busca.body)-1].lineno, len(linhas))
 
 
 		linha_inicio = None
 		linha_fim = None
-		if not arvore_de_busca:
+		if not arvore_de_busca.body:
 			return None
 
 		noh_alvo = None
-		numero_de_nohs_filhos = len(arvore_de_busca.body)
-		numero_noh_alvo = 0
-		contador_de_nohs = 0
-		for n in arvore_de_busca.body:
-			contador_de_nohs += 1
-			if isinstance(n, tipo_do_noh):
-				if n.name == nome_da_estrutura:
+		for n in nohs_de_interesse:
+			if isinstance(n[0], tipo_do_noh):
+				if n[0].name == nome_da_estrutura:
 					noh_alvo = n
-					numero_noh_alvo = contador_de_nohs
 					break
 
 		# se não encontrado um noh para a função indicada, retorna None
@@ -245,38 +231,8 @@ In [36]: # abre novamente o arquivo, para contar o número de linhas e guardá-l
 				print(('Método {} da classe {} não encontrada no arquivo {} ').format(nome_da_estrutura, arvore_de_busca.name, self.nome_arquivo))
 				return None
 
-		linha_inicio = noh_alvo.lineno
-		# abre novamente o arquivo, para contar o número de linhas e guardá-las para uso futuro, se necessário
-		try:
-			arquivo = open(self.nome_arquivo, 'r')
-		except IOError:
-			print(('Erro ao tentar abrir o arquivo {}').format(self.nome_arquivo))
-			return None
-			
-		linhas = arquivo.readlines()
-		arquivo.close()
-
-		# se o nó alvo é o último nó da árvore, implica que a linha final da função/classe é a linha final do arquivo, SE 
-		# informada a árvore completa; senão, é a última linha da subárvore analisada, informada no parâmetro 'delimitador_linha_final'
-		if numero_noh_alvo == numero_de_nohs_filhos:
-			if delimitador_linha_final == 0:
-				linha_fim = len(linhas)
-			else:
-				linha_fim = delimitador_linha_final
-		
-		# se o nó alvo não é o último nó da árvore, implica que a linha final da função é a primeira linha em branco 
-		# imediatamente anterior à linha de início do próximo nó
-		else:
-			linha_fim_candidata = arvore_de_busca.body[numero_noh_alvo].lineno
-			linhas_para_analise = linhas[0:linha_fim_candidata]
-			# inverte as linhas que serão analisadas
-			linhas_para_analise.reverse()
-			# caminha nas linhas, procurando uma linha vazia
-			for l in linhas_para_analise:
-				linha_fim_candidata -= 1
-				if self.eh_linha_vazia(l):
-					break
-			linha_fim = linha_fim_candidata
+		linha_inicio = noh_alvo[1]
+		linha_fim = noh_alvo[2]
 
 		if linha_inicio > linha_fim:
 			print(('Erro - linha inicial - {} - maior que linha final - {}').format(linha_inicio,linha_fim))
