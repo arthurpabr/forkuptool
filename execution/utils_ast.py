@@ -177,36 +177,50 @@ class LinesFinder():
 
 	# retorna o nº das linhas de início e fim da função indicada no arquivo indicado (nº de linhas iniciando em 1)
 	def encontrar_inicio_e_fim_de_noh_ast(self, arvore_de_busca, tipo_do_noh, nome_da_estrutura, delimitador_linha_final = 0): 
-		#passo 0: monta uma lista de nós de interesse
-		contador = 0
-		contador_tmp = 0
+		#passo 0: conta o nº de linhas do arquivo, necessário caso o nó seja o último
+		try:
+			arquivo = open(self.nome_arquivo, 'r')
+		except IOError:
+			print(('Erro ao tentar abrir o arquivo {}').format(self.nome_arquivo))
+			return False
+		linhas = arquivo.readlines()
+		arquivo.close()
+		numero_de_linhas_do_arquivo = len(linhas)
+
+		#passo 1: monta uma lista de nós de interesse
+		ponteiro = 0
+		ponteiro_proximo_irmao = 0
 		nohs_de_interesse = []
 		achou_primeira_classe_ou_funcao = False
+		numero_de_filhos = len(arvore_de_busca.body)
+
 		for n in arvore_de_busca.body:
 			if not achou_primeira_classe_ou_funcao and (isinstance(n, ast.FunctionDef) or isinstance(n, ast.ClassDef)):
 				achou_primeira_classe_ou_funcao = True
-			contador += 1
-			#print(('Noh posicao {} - {}').format(n, contador)) 
+
 			if achou_primeira_classe_ou_funcao: 
-				contador_tmp = contador 
-				if contador_tmp < len(arvore_de_busca.body): 
-					if (contador_tmp -1) == len(arvore_de_busca.body):
-						noh_de_interesse = (n, n.lineno, 'final do arquivo') 
-					else: 
-						proximo_irmao = arvore_de_busca.body[contador] 
-						while not(isinstance(proximo_irmao, ast.FunctionDef) or isinstance(proximo_irmao, ast.ClassDef)):
-							contador_tmp += 1
-							proximo_irmao = arvore_de_busca.body[contador_tmp]
-						noh_de_interesse = (n, n.lineno, proximo_irmao.lineno-1)
-					nohs_de_interesse.append(noh_de_interesse)
-		# abre o arquivo, para contar o número de linhas e guardá-las para uso futuro, se necessário 
-		try: 
-			arquivo = open(self.nome_arquivo, 'r') 
-		except IOError: 
-			print(('Erro ao tentar abrir o arquivo {}').format(self.nome_arquivo)) 
-		linhas = arquivo.readlines() 
-		arquivo.close() 
-		noh_de_interesse = (arvore_de_busca.body[len(arvore_de_busca.body)-1], arvore_de_busca.body[len(arvore_de_busca.body)-1].lineno, len(linhas))
+				ponteiro_proximo_irmao = ponteiro + 1
+				proximo_irmao = None
+
+				if ponteiro_proximo_irmao == numero_de_filhos:
+					# chegou no final - não há mais irmãos; adiciona o nó atual
+					if delimitador_linha_final != 0:
+						noh_de_interesse = (n, n.lineno, delimitador_linha_final)
+					else:
+						noh_de_interesse = (n, n.lineno, numero_de_linhas_do_arquivo)
+
+				else:
+					proximo_irmao = arvore_de_busca.body[ponteiro_proximo_irmao] 
+					while not(isinstance(proximo_irmao, ast.FunctionDef) or isinstance(proximo_irmao, ast.ClassDef)) and \
+						ponteiro_proximo_irmao < numero_de_filhos:
+
+						ponteiro_proximo_irmao += 1
+						proximo_irmao = arvore_de_busca.body[ponteiro_proximo_irmao]
+
+					noh_de_interesse = (n, n.lineno, proximo_irmao.lineno-1)
+				nohs_de_interesse.append(noh_de_interesse)
+
+			ponteiro += 1
 
 		linha_inicio = None
 		linha_fim = None
