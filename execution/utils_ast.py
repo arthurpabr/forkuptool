@@ -212,7 +212,7 @@ class LinesFinder():
 				else:
 					proximo_irmao = arvore_de_busca.body[ponteiro_proximo_irmao] 
 					while not(isinstance(proximo_irmao, ast.FunctionDef) or isinstance(proximo_irmao, ast.ClassDef)) and \
-						ponteiro_proximo_irmao < numero_de_filhos:
+						(ponteiro_proximo_irmao + 1) < numero_de_filhos:
 
 						ponteiro_proximo_irmao += 1
 						proximo_irmao = arvore_de_busca.body[ponteiro_proximo_irmao]
