@@ -1,0 +1,1 @@
+default_app_config = 'cadastros_basicos.apps.CadastrosBasicosConfig'

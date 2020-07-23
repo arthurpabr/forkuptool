@@ -1,0 +1,100 @@
+{% extends super_template|default:"admin/base_site.html" %}
+{% comment %}É o template default renderizado pelo @rtr{% endcomment %}
+{% block content %}
+<h1>Mensalidades em atraso</h1>
+<div><h2>{{mensagem_retorno}}</h2></div>
+<div>{{mensagem_retorno_2}}</div>
+
+{% if total_em_atraso_geral %}
+    &nbsp;<br />
+    <h2>Total geral em atraso: <u>R$ {{total_em_atraso_geral}}</u></h2>
+{% endif %}
+
+{% if total_em_atraso_por_mes_ano %}
+    &nbsp;<br />
+    <h2>Total por ano/mês:</h2><br />
+    <div class="grp-module grp-changelist-results">    
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Ano/Mês</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ano_mes, valor in total_em_atraso_por_mes_ano.items %}
+                    <tr class="grp-row {% cycle 'grp-row-even' 'grp-row-odd' %}">
+                        <td>{{forloop.counter}}</td>
+                        <td>{{ano_mes}}</td>
+                        <td>R$ {{valor}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{% if total_em_atraso_por_aluno %}
+    &nbsp;<br />
+    <h2>Total por aluno:</h2><br />
+    <div class="grp-module grp-changelist-results">    
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Aluno(a)</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aluno, valor in total_em_atraso_por_aluno.items %}
+                    <tr class="grp-row {% cycle 'grp-row-even' 'grp-row-odd' %}">
+                        <td>{{forloop.counter}}</td>
+                        <td>{{aluno}}</td>
+                        <td>R$ {{valor}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+{% if mensalidades_em_atraso %}
+    &nbsp;<br />
+    <h2>Todas (uma a uma):</h2><br />
+    <div class="grp-module grp-changelist-results">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Aluno(a)</th>
+                    <th>Turma</th>
+                    <th>Mês/ano</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mensalidade in mensalidades_em_atraso %}
+                    <tr class="grp-row {% cycle 'grp-row-even' 'grp-row-odd' %}">
+                        <td>{{forloop.counter}}</td>
+                        <td>{{mensalidade.matricula.aluno.nome}}</td>
+                        <td>{{mensalidade.matricula.turma}}</td>
+                        <td>{{mensalidade.mes_referencia}}/{{mensalidade.ano_referencia}}</td>
+                        <td>R$ {{mensalidade.valor_cobrado}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+
+<ul class="grp-object-tools">
+    <li>
+        <a href="../mensalidade/" class="grp-listing grp-state-focus">Voltar para Mensalidades</a>
+    </li>
+    <li>
+        <a href="../../" class="grp-listing grp-state-focus">Voltar para o Início</a>
+    </li>
+</ul>
+{% endblock %}

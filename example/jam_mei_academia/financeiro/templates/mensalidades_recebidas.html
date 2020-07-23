@@ -1,0 +1,57 @@
+{% extends super_template|default:"admin/base_site.html" %}
+{% comment %}É o template default renderizado pelo @rtr{% endcomment %}
+{% block content %}
+<h1>Mensalidades recebidas</h1>
+
+{% if total_a_receber_neste_mes %}
+    <h2>Total <u>a receber</u> este mês: <u>R$ {{total_a_receber_neste_mes}}</u></h2>
+    <div>(ref. a {{numero_de_mensalidades_a_receber_neste_mes}} mensalidades)</div>
+{% endif %}
+<div>&nbsp;</div>
+{% if total_recebido_neste_mes %}
+    <h2>Total <u>recebido</u> neste mês: <u>R$ {{total_recebido_neste_mes}}</u></h2>
+    <div>(ref. a {{numero_de_mensalidades_recebidas_neste_mes}} mensalidades)</div>
+{% endif %}
+
+<div>
+    <br />&nbsp;
+    <h2>{{mensagem_retorno}}</h2>
+    <div>{{mensagem_retorno_2}}</div>
+    <br />&nbsp;
+    {% if total_recebido_por_mes_ano %}
+        <h2>Total recebido por ano/mês:</h2><br />
+        <div class="grp-module grp-changelist-results">    
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ano/Mês</th>
+                        <th>Total de mensalidades do mês</th>
+                        <th>Total de mensalidades de meses anteriores</th>
+                        <th>Total geral recebido no mês</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in total_recebido_por_mes_ano %}
+                        <tr class="grp-row {% cycle 'grp-row-even' 'grp-row-odd' %}">
+                            <td>{{forloop.counter}}</td>
+                            <td>{{item.ano_mes}}</td>
+                            <td>R$ {{item.valor_do_mes}}</td>
+                            <td>R$ {{item.valor_de_meses_anteriores}}</td>
+                            <td>R$ {{item.valor_total_do_mes}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+<ul class="grp-object-tools">
+    <li>
+        <a href="../mensalidade/" class="grp-listing grp-state-focus">Voltar para Mensalidades</a>
+    </li>
+    <li>
+        <a href="../../" class="grp-listing grp-state-focus">Voltar para o Início</a>
+    </li>
+</ul>
+{% endblock %}

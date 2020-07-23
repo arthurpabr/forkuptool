@@ -1,0 +1,45 @@
+{% extends super_template|default:"admin/base_site.html" %}
+{% comment %}É o template default renderizado pelo @rtr{% endcomment %}
+{% block content %}
+<h1>Cálculo de mensalidades</h1>
+<div><h2>{{mensagem_retorno}}</h2></div><br />
+
+{% if novas_mensalidades %}
+    <div class="grp-module grp-changelist-results">
+        <table>
+            <thead>
+                <tr>
+                    <th>Aluno(a)</th>
+                    <th>Turma</th>
+                    <th>Valor</th>
+                    <th>Mês/ano</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mensalidade in novas_mensalidades %}
+                    <tr class="grp-row {% cycle 'grp-row-even' 'grp-row-odd' %}">
+                        <td>{{mensalidade.matricula.aluno.nome}}</td>
+                        <td>{{mensalidade.matricula.turma}}</td>
+                        <td>{{mensalidade.valor_cobrado}}</td>
+                        <td>{{mensalidade.mes_referencia}}/{{mensalidade.ano_referencia}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <h2>Não há novas mensalidades a gerar!</h2><br />
+{% endif %}
+
+{% if quantidade_mensalidades_ja_existentes > 0 %}
+<div>Mensalidades já existentes: {{quantidade_mensalidades_ja_existentes}}</div>
+{% endif %}
+<ul class="grp-object-tools">
+    <li>
+        <a href="../mensalidade/" class="grp-listing grp-state-focus">Voltar para Mensalidades</a>
+    </li>
+    <li>
+        <a href="../../" class="grp-listing grp-state-focus">Voltar para o Início</a>
+    </li>
+</ul>
+{% endblock %}
