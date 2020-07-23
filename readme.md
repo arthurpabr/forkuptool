@@ -8,6 +8,7 @@
 
 #### Ative o ambiente virtual 
 ``` cd forkupenv ```
+
 ``` source bin/activate ```
 
 #### Navegue até a pasta onde o projeto foi clonado
@@ -22,7 +23,9 @@
 
 ### Subindo a aplicação 
 Depois de ativar o ambiente virtual e entrar na pasta da aplicação, rode o seguinte comando:
+
 ``` python manage.py runserver ```
 
 Abra seu navegador e acesse:
-localhost:8000/
+
+http://localhost:8000/
