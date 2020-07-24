@@ -3,10 +3,10 @@
 
 Este repositório contém a implementação do protótipo da ferramenta ForkUpTool. Trata-se de uma ferramenta web escrita em Python com uso do framework Django.
 
-Um vídeo ilustrativo de uso da ferramenta, bem como arquivos necessários para reprodução do exemplo apresentado no vídeo, estão disponíveis [aqui:](example).
+Um vídeo ilustrativo de uso da ferramenta, bem como arquivos necessários para reprodução do exemplo apresentado no vídeo, estão disponíveis [aqui](example).
 
 
-As demais pastas fazem parte da estrutura do projeto seguindo o padrão no Django.
+As demais pastas fazem parte da estrutura do projeto seguindo o padrão Django.
 
 ***
 
