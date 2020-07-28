@@ -185,41 +185,24 @@ class LinesFinder():
 			return False
 		linhas = arquivo.readlines()
 		arquivo.close()
-		numero_de_linhas_do_arquivo = len(linhas)
+		linha_final_do_arquivo = len(linhas)
 
-		#passo 1: monta uma lista de nós de interesse
-		ponteiro = 0
-		ponteiro_proximo_irmao = 0
+		#monta uma lista de nós de interesse
 		nohs_de_interesse = []
-		achou_primeira_classe_ou_funcao = False
-		numero_de_filhos = len(arvore_de_busca.body)
-
+		ponteiro = 0
 		for n in arvore_de_busca.body:
-			if not achou_primeira_classe_ou_funcao and (isinstance(n, ast.FunctionDef) or isinstance(n, ast.ClassDef)):
-				achou_primeira_classe_ou_funcao = True
-
-			if achou_primeira_classe_ou_funcao: 
-				ponteiro_proximo_irmao = ponteiro + 1
-				proximo_irmao = None
-
-				if ponteiro_proximo_irmao == numero_de_filhos:
-					# chegou no final - não há mais irmãos; adiciona o nó atual
-					if delimitador_linha_final != 0:
-						noh_de_interesse = (n, n.lineno, delimitador_linha_final)
-					else:
-						noh_de_interesse = (n, n.lineno, numero_de_linhas_do_arquivo)
-
+			noh_de_interesse = None
+			if isinstance(n, ast.FunctionDef) or isinstance(n, ast.ClassDef):
+				linha_inicial = n.lineno
+				if delimitador_linha_final == 0:
+					linha_final = self.obter_linha_final_de_noh_ast(arvore_de_busca.body[ponteiro+1:],\
+						linha_final_do_arquivo)
 				else:
-					proximo_irmao = arvore_de_busca.body[ponteiro_proximo_irmao] 
-					while not(isinstance(proximo_irmao, ast.FunctionDef) or isinstance(proximo_irmao, ast.ClassDef)) and \
-						(ponteiro_proximo_irmao + 1) < numero_de_filhos:
+					linha_final = self.obter_linha_final_de_noh_ast(arvore_de_busca.body[ponteiro+1:],\
+						delimitador_linha_final)
 
-						ponteiro_proximo_irmao += 1
-						proximo_irmao = arvore_de_busca.body[ponteiro_proximo_irmao]
-
-					noh_de_interesse = (n, n.lineno, proximo_irmao.lineno-1)
+				noh_de_interesse = (n, linha_inicial, linha_final)
 				nohs_de_interesse.append(noh_de_interesse)
-
 			ponteiro += 1
 
 		linha_inicio = None
@@ -253,6 +236,17 @@ class LinesFinder():
 			return None
 
 		return [linha_inicio,linha_fim]
+
+
+
+	# retorna o nº da linha final de um nó, baseado na busca de "irmãos" sucessores
+	def obter_linha_final_de_noh_ast(self, nohs_irmaos, linha_final_candidata): 
+		linha_final = linha_final_candidata
+		for n in nohs_irmaos:
+			if isinstance(n, ast.FunctionDef) or isinstance(n, ast.ClassDef):
+				linha_final = n.lineno-1
+				break
+		return linha_final
 
 
 
