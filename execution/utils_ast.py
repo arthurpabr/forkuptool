@@ -87,6 +87,23 @@ class LinesFinder():
 		return [linha_inicio,linha_fim]
 
 
+	# retorna o nome da annotation anterior àquela informada, na 
+	# função informada, se houver
+	def get_nome_annotation_anterior(self, nome_annotation, nome_funcao):
+		nome_annotation_anterior = None
+		analyzer = Analyzer()
+		analyzer.visit(self.tree)
+		annotations_desta_funcao = analyzer.get_nohsAnnotationDeUmaFuncao(nome_funcao)
+
+		contador = 0
+		for annotation in annotations_desta_funcao:
+			if contador > 0:
+				if annotation[0] == nome_annotation.replace('@',''):
+					nome_annotation_anterior = annotations_desta_funcao[contador-1][0]
+			contador += 1
+		return nome_annotation_anterior
+
+
 	def encontrar_inicio_e_fim_de_funcao(self, nome_funcao):
 		print('Entrou em encontrar_inicio_e_fim_de_funcao')
 		return self.encontrar_inicio_e_fim_de_noh_ast(self.tree, ast.FunctionDef, nome_funcao)
@@ -391,3 +408,45 @@ class Analyzer(ast.NodeVisitor):
 		return noh
 
 
+	# retorna uma lista de nós de annotation para a função informada
+	def get_nohsAnnotationDeUmaFuncao(self, nome_funcao):
+		lista_de_nohs = []
+		noh_funcao = self.get_nohFunctionDef(nome_funcao)
+		if noh_funcao:
+			if 'decorator_list' in noh_funcao.__dict__:
+				for n in noh_funcao.decorator_list:
+					if isinstance(n, ast.Name):
+						if 'id' in n.__dict__:
+							noh_para_add = (n.id, n)
+							lista_de_nohs.append(noh_para_add)
+
+					if isinstance(n, ast.Call):
+						if 'func' in n.__dict__:
+							n2 = n.func
+
+							if isinstance(n2, ast.Attribute):
+								nome_para_comparar = ''
+								n3 = n2.value
+
+								if isinstance(n3, ast.Name):
+									if 'id' in n3.__dict__:
+										nome_para_comparar+= n3.id
+										if 'attr' in n2.__dict__:
+											nome_para_comparar+='.'+n2.attr
+										noh_para_add = (nome_para_comparar, n)
+										lista_de_nohs.append(noh_para_add)
+
+							if isinstance(n2, ast.Name):
+								if 'id' in n2.__dict__:
+									noh_para_add = (n2.id, n)
+									lista_de_nohs.append(noh_para_add)
+
+					if isinstance(n, ast.Attribute):
+						nome_para_comparar = ''
+						nome_para_comparar+= n.value.id
+						if 'attr' in n.__dict__:
+							nome_para_comparar+='.'+n.attr
+						noh_para_add = (nome_para_comparar, n)
+						lista_de_nohs.append(noh_para_add)
+
+		return lista_de_nohs

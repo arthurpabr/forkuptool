@@ -15,7 +15,7 @@ def index(request):
 def executar_ferramenta(request):
 
 	# busca as opções de configuração de execução da ferramenta registradas no banco de dados
-	configuracaoferramenta_choices = ConfiguracaoFerramenta.objects.all()
+	configuracaoferramenta_choices = ConfiguracaoFerramenta.objects.all().order_by('-id')
 	configuracaoferramenta_choices_to_choicefield = list()
 	for configuracao in configuracaoferramenta_choices:
 		configuracaoferramenta_choices_to_choicefield.append([configuracao.pk,configuracao])

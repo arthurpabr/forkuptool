@@ -197,12 +197,7 @@ def avaliar_instrucao_add_annotation(instruction_line, configuracaoferramenta):
 	else:
 		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
 		print(resultado_execucao)
-
-
-
-
-	print(('file: {}, instruction: {}').format(file, instruction))
-	return('Em implementação')
+	return resultado_execucao
 
 
 
@@ -268,6 +263,7 @@ def avaliar_instrucao_add_unit(instruction_line, configuracaoferramenta):
 	else:
 		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
 		print(resultado_execucao)
+	return resultado_execucao
 
 
 
@@ -298,6 +294,7 @@ def avaliar_instrucao_remove_annotation(instruction_line, configuracaoferramenta
 	else:
 		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
 		print(resultado_execucao)
+	return resultado_execucao
 
 
 
@@ -387,6 +384,7 @@ def avaliar_instrucao_remove_unit(instruction_line, configuracaoferramenta):
 	else:
 		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
 		print(resultado_execucao)
+	return resultado_execucao
 
 
 
@@ -485,10 +483,47 @@ def avaliar_instrucao_replace_annotation(instruction_line, configuracaoferrament
 		return resultado_execucao
 
 	instruction = vet_tmp[1]
-	code_unit = vet_tmp[2]
+	annotation = vet_tmp[2]
+	# da posição 3 em diante estarão representados os demais parâmetros, 
+	# mas com tamanho arbitrário já que no Json podem haver n espaços;
+	# é necessário reconstruir os parâmetros
+	separator = ' '
+	part_instruction = ''
+	part_instruction = separator.join(vet_tmp[3:])
+	# a string utilizada para separar o Json dos demais parâmetros foi 
+	# definida empiricamente e é representada abaixo
+	separator = '} from '
+	vet_tmp = part_instruction.split(separator)
+	str_json = vet_tmp[0]+'}'
+	# remonta novamente os parâmetros restantes
+	separator = ' '
+	part_instruction = ''
+	part_instruction = separator.join(vet_tmp[1:])
+	vet_tmp = part_instruction.split(' ')
+	code_unit_from = vet_tmp[0]
+	position_ref = None
+	annotation_ref = None
 
-	print(('file: {}, instruction: {}').format(file, instruction))
-	return('Em implementação')
+	finder = LinesFinder(file)
+	annotation_ref = finder.get_nome_annotation_anterior(annotation, code_unit_from)
+	print(('Annotation anterior: {}').format(annotation_ref))
+	if annotation_ref:
+		position_ref = 'after'
+	
+	executou_corretamente_remove = False
+	executou_corretamente_add = False
+	executou_corretamente_remove = remove_annotation(file, annotation, code_unit_from)
+	if executou_corretamente_remove:
+		executou_corretamente_add = add_annotation(file, annotation, str_json, code_unit_from, position_ref, annotation_ref)
+
+	if executou_corretamente_remove and executou_corretamente_add:
+		resultado_execucao = ('Instrução {} executada com sucesso').format(instruction_line)
+		print(resultado_execucao)
+
+	else:
+		resultado_execucao = ('ERRO ao executar {}').format(instruction_line)
+		print(resultado_execucao)
+	return resultado_execucao
 
 
 
