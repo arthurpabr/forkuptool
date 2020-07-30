@@ -1,9 +1,11 @@
 import os
 
+from django.conf import settings
 from django.shortcuts import render
 
 from .forms import ExecutarFerramentaForm
 from .utils_parser import avaliar_patch_file
+from .utils_refactor import buscar_sugestoes_refatoramento_patch_file
 from configuration.models import ConfiguracaoFerramenta
 
 def index(request):
@@ -42,6 +44,7 @@ def executar_ferramenta(request):
 			
 			# navega pelo diretório dos arquivos de patch, buscando os arquivos .dsl
 			resultado_processamento_por_arquivo = {}
+			sugestoes_refatoramento_por_arquivo = {}
 			for dirpath, dirnames, files in os.walk(PATH_PATCH_FILES):
 				for file_name in sorted(files):
 			 		file_full_name = os.path.join(dirpath, file_name)
@@ -54,6 +57,9 @@ def executar_ferramenta(request):
 			 		if file_extension and file_extension == 'dsl':
 			 			print(('Encontrado arquivo dsl: {} (caminho completo: {})').format(file_name, file_full_name))
 			 			resultados_execucao = avaliar_patch_file(file_name,configuracaoferramenta_obj)
+			 			if settings.REFACTORY_SUGGESTIONS_ENABLE:
+			 				sugestoes_refatoramento = buscar_sugestoes_refatoramento_patch_file(file_name,configuracaoferramenta_obj)
+			 				sugestoes_refatoramento_por_arquivo[file_name] = sugestoes_refatoramento
 		 				resultado_processamento_por_arquivo[file_name] = resultados_execucao
 
 			subtitle = 'Resultados de execução'

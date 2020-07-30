@@ -105,12 +105,10 @@ class LinesFinder():
 
 
 	def encontrar_inicio_e_fim_de_funcao(self, nome_funcao):
-		print('Entrou em encontrar_inicio_e_fim_de_funcao')
 		return self.encontrar_inicio_e_fim_de_noh_ast(self.tree, ast.FunctionDef, nome_funcao)
 
 
 	def encontrar_inicio_e_fim_de_classe(self, nome_classe):
-		print('Entrou em encontrar_inicio_e_fim_de_classe')
 		return self.encontrar_inicio_e_fim_de_noh_ast(self.tree, ast.ClassDef, nome_classe)
 
 
