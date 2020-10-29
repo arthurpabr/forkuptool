@@ -15,7 +15,7 @@
 
 <p><b>Último commit do intervalo</b>: {{ultimo_commit_geral.hash|slice:'0:7'}} ({{ultimo_commit_geral.author_date|date:'Y-m-d H:i'}})</p>
 
-<p><b>Último commit apenas em client</b>: {{ultimo_commit_client.hash|slice:'0:7'}} ({{ultimo_commit_client.author_date|date:'Y-m-d H:i'}})</p>
+<p><b>Último commit apenas no fork</b>: {{ultimo_commit_client.hash|slice:'0:7'}} ({{ultimo_commit_client.author_date|date:'Y-m-d H:i'}})</p>
 <p>
 	Timeline comparando repositório {{config.alias_vendor|upper}} versus repositório {{config.alias_client|upper}}
 </p>
@@ -65,6 +65,12 @@
 	</script>
 
 {% endif %}
+<p>
+	<ul>
+		<li>Em Azul escuro: commit exclusivo do fork do tipo "merge"</li>
+		<li>Em Salmão: commit exclusivo do fork</li>
+	</ul>
+</p>
 <p>&nbsp;</p>
 <p>Nº de commits em {{config.alias_client|upper}} não existentes em {{config.alias_vendor|upper}}: {{contador_commits_aux_sim_vendor_nao_geral}}</p>
 <p>Destes, {{contador_commits_aux_sim_vendor_nao_tipo_merge}} são commits de merge.</p>

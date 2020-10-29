@@ -104,9 +104,8 @@ def info_criacao_client(request):
 			for c in n_primeiros_commits_somente_client:
 			    print(('{} ({}) - {} - {} - {}').format(c['author_date'], c['hash'][0:7], c['author_name'], c['merge'], c['msg'][0:80]))
 
-			subtitle = 'Resultados de execução'
 			title = 'Forkuptool - Módulo de análise de repositórios'
-			subtitle = 'Informações de criação do fork (repositório client)'
+			subtitle = 'Commits exclusivos do fork (repositório "client")'
 			return render(request, 'info_criacao_client_show.html', locals())
 
 		else:
@@ -212,105 +211,136 @@ def analisar_timeline(request):
 			todos_commits = commits_vendor + commits_aux
 
 			json_geral = json.dumps(todos_commits)
-			title = 'Forkuptool'
+			title = 'Forkuptool - Módulo de análise de repositórios'
+			subtitle = 'Timeline entre origem e forkeado'
 			return render(request, 'analisar_timeline_show.html', locals())
 
 	# se GET cria o formulário em branco
 	form = AnalisarTimelineForm()
-	title = 'Forkuptool'
-	subtitle = 'Analisar timeline'	
+	title = 'Forkuptool - Módulo de análise de repositórios'
+	subtitle = 'Analisar timeline'
 	return render(request, 'analisar_timeline.html', locals())
 
 
 
 def simular_conflitos(request):
+	# busca as opções de configuração de execução da ferramenta registradas no banco de dados
+	configuracaoferramenta_choices = ConfiguracaoFerramenta.objects.all().order_by('-id')
+	configuracaoferramenta_choices_to_choicefield = list()
+	for configuracao in configuracaoferramenta_choices:
+		configuracaoferramenta_choices_to_choicefield.append([configuracao.pk,configuracao])
 
-	config = ConfiguracaoFerramenta.objects.get(id=2) 
-	gr = GitRepository(config.path_auxiliary_files)
-	# commits_vendor = (
-	# 	'fca529f', 'a639855', '168e36a', '48374cd', 'e0428a2', 
-	# 	'49275f2', '25ad58d', 'd7c1bdf', '75c8a35', '41f8ace', 
-	# 	'69e7a98', 'a8f4829', 'be98898', 'f7e815a', '03f178c', 
-	# 	'fc7af49', '74a8748', 'a58320e', '1d4fa85', '855e138', 
-	# 	'671aaa8', '06a967e', '048aa85', '9119a3f', 'a74d6ae', 
-	# 	'bb83f28', '8f5e756', '83610c5', '5c5fc7d', '5e74902', 
-	# 	'ce59547', '923f5ee', 'df8666d', 'c219a97', 'aefcd22', 
-	# 	'0be9ee9', 'bb3c479', 'e0557a0', 'f02b0c3', '8d5cdfa', 
-	# 	'e944c53', 
-	# 	'0a93957',)
-	commits_vendor = (
-		'48d1edb',)
+	# se GET cria o formulário em branco
+	if request.method == 'GET':
+		form = ExecutarFerramentaForm(configuracaoferramenta_choices_to_choicefield)
+		title = 'Forkuptool - Módulo de análise de repositórios'
+		subtitle = 'Selecione uma configuração para continuar'
+		return render(request, 'simular_conflitos.html', locals())
+
+
+	# se POST será necessário processar os dados do formulário
+	elif request.method == 'POST':
+		configuracaoferramenta_escolhida = None
+
+		if 'configuracaoferramenta_escolhida' in request.POST:
+			configuracaoferramenta_escolhida = request.POST['configuracaoferramenta_escolhida']
+
+		if configuracaoferramenta_escolhida:
+			# busca a configuração para o id informado
+			config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
+			gr = GitRepository(config.path_auxiliary_files)
+
+			#TODO: mudar a selação dos commits, que hoje é fixo
+			
+			# commits_vendor = (
+			# 	'fca529f', 'a639855', '168e36a', '48374cd', 'e0428a2', 
+			# 	'49275f2', '25ad58d', 'd7c1bdf', '75c8a35', '41f8ace', 
+			# 	'69e7a98', 'a8f4829', 'be98898', 'f7e815a', '03f178c', 
+			# 	'fc7af49', '74a8748', 'a58320e', '1d4fa85', '855e138', 
+			# 	'671aaa8', '06a967e', '048aa85', '9119a3f', 'a74d6ae', 
+			# 	'bb83f28', '8f5e756', '83610c5', '5c5fc7d', '5e74902', 
+			# 	'ce59547', '923f5ee', 'df8666d', 'c219a97', 'aefcd22', 
+			# 	'0be9ee9', 'bb3c479', 'e0557a0', 'f02b0c3', '8d5cdfa', 
+			# 	'e944c53', 
+			# 	'0a93957',)
+			commits_vendor = (
+				'48d1edb',)
+			
+			# commits_client = (
+			# 	'a9cb50e', '085aa2a', '66165fd', '6eb4d4c', '353a877', 
+			# 	'b1bf9fe', '7891bb7', '70ddc11', '6a858e2', 'bbc8bea', 
+			# 	'df85d8e', 'b57eca7', '914f9b1', 'e8faf15', '3a1a355', 
+			# 	'da45411', '53464c7', '75f241c', '1e8e20b', '7c9583c',
+			#     '7482e54', 'a2c2ae2', 'dc18528', '5b308d9', 'fc62c99', 
+			# 	'2977dbf', '90aa392', 'd2c2f36', 'e083730', '2edc4b3', 
+			# 	'3328138', '3595f20', 'd6b40e5', '1c82a62', '757c692', 
+			# 	'0230fb0', '3094585', '43a6ab3', '151f8a3', 'ec90a78', 
+			# 	'5a51d1a', 
+			# 	'287f6ed',)
+			commits_client = (
+				'd472976',)
+
+
+			contador = 0
+			conflitos_por_rodada = dict()
+			for c in commits_vendor:
+				total_trechos_conflitantes = 0
+				total_linhas_conflitantes = 0
+				conflitos = dict()
+
+				gr.git().checkout('master')
+				gr.git().checkout(c)
+				branch_vendor = 't'+str(contador+1)+'vendor'
+				gr.git().branch(branch_vendor)
+				gr.git().checkout('master')
+				gr.checkout(commits_client[contador])
+				branch_client = 't'+str(contador+1)+'client'
+				gr.git().branch(branch_client)
+				branch_merge = 't'+str(contador+1)+'merge'
+				gr.git().branch(branch_merge)
+				gr.git().checkout(branch_merge)
+
+				try:
+					# tenta fazer o merge; se executar sem erros é porque não houve conflito
+					gr.git().merge(branch_vendor)
+				except Exception as e:
+					linhas_com_erro = str(e)
+					linhas_com_erro = linhas_com_erro.split('\n')
+					arquivos_com_conflito = identificar_arquivos_em_conflito(linhas_com_erro)
+
+					for a in arquivos_com_conflito:
+						numero_trechos_conflitantes = 0
+						numero_linhas_conflitantes = 0
+						caminho_completo = gr.path.as_posix()+'/'+a
+						if not is_binary(caminho_completo):
+							numero_trechos_conflitantes = contar_ocorrencias_desta_linha_neste_arquivo(
+							'<<<<<<< HEAD', caminho_completo)
+							numero_linhas_conflitantes = contar_linhas_entre_esses_linhas_neste_arquivo(
+							    '<<<<<<< HEAD', '=======', caminho_completo)
+						else:
+							numero_trechos_conflitantes = 1
+							numero_linhas_conflitantes = 1
+						total_trechos_conflitantes+=numero_trechos_conflitantes
+						total_linhas_conflitantes+=numero_linhas_conflitantes
+						conflitos[caminho_completo] = numero_trechos_conflitantes
+					gr.git().merge('--abort')
+					gr.git().checkout('master')
+
+				print(('Processou par {}: {} - {}').format((contador + 1), c, commits_client[contador]))
+
+				conflitos_por_rodada[(contador + 1)] = (conflitos, total_trechos_conflitantes, total_linhas_conflitantes)
+				contador += 1
+			
+			print(conflitos_por_rodada)
+			title = 'Forkuptool - Módulo de análise de repositórios'
+			subtitle = 'Simulação de conflitos de mesclagem'	
+			return render(request, 'simular_conflitos_show.html', locals())
+
+		else:
+			messages.error(request, 'Necessário informar uma configuração')
+			return render(request, 'index.html', {'title': 'Forkuptool', 'subtitle': 'Bem-vindo', })
+
 	
-	# commits_client = (
-	# 	'a9cb50e', '085aa2a', '66165fd', '6eb4d4c', '353a877', 
-	# 	'b1bf9fe', '7891bb7', '70ddc11', '6a858e2', 'bbc8bea', 
-	# 	'df85d8e', 'b57eca7', '914f9b1', 'e8faf15', '3a1a355', 
-	# 	'da45411', '53464c7', '75f241c', '1e8e20b', '7c9583c',
-	#     '7482e54', 'a2c2ae2', 'dc18528', '5b308d9', 'fc62c99', 
-	# 	'2977dbf', '90aa392', 'd2c2f36', 'e083730', '2edc4b3', 
-	# 	'3328138', '3595f20', 'd6b40e5', '1c82a62', '757c692', 
-	# 	'0230fb0', '3094585', '43a6ab3', '151f8a3', 'ec90a78', 
-	# 	'5a51d1a', 
-	# 	'287f6ed',)
-	commits_client = (
-		'd472976',)
-
-
-	contador = 0
-	conflitos_por_rodada = dict()
-	for c in commits_vendor:
-		total_trechos_conflitantes = 0
-		total_linhas_conflitantes = 0
-		conflitos = dict()
-
-		gr.git().checkout('master')
-		gr.git().checkout(c)
-		branch_vendor = 't'+str(contador+1)+'vendor'
-		gr.git().branch(branch_vendor)
-		gr.git().checkout('master')
-		gr.checkout(commits_client[contador])
-		branch_client = 't'+str(contador+1)+'client'
-		gr.git().branch(branch_client)
-		branch_merge = 't'+str(contador+1)+'merge'
-		gr.git().branch(branch_merge)
-		gr.git().checkout(branch_merge)
-
-		try:
-			# tenta fazer o merge; se executar sem erros é porque não houve conflito
-			gr.git().merge(branch_vendor)
-		except Exception as e:
-			linhas_com_erro = str(e)
-			linhas_com_erro = linhas_com_erro.split('\n')
-			arquivos_com_conflito = identificar_arquivos_em_conflito(linhas_com_erro)
-
-			for a in arquivos_com_conflito:
-				numero_trechos_conflitantes = 0
-				numero_linhas_conflitantes = 0
-				caminho_completo = gr.path.as_posix()+'/'+a
-				if not is_binary(caminho_completo):
-					numero_trechos_conflitantes = contar_ocorrencias_desta_linha_neste_arquivo(
-					'<<<<<<< HEAD', caminho_completo)
-					numero_linhas_conflitantes = contar_linhas_entre_esses_linhas_neste_arquivo(
-					    '<<<<<<< HEAD', '=======', caminho_completo)
-				else:
-					numero_trechos_conflitantes = 1
-					numero_linhas_conflitantes = 1
-				total_trechos_conflitantes+=numero_trechos_conflitantes
-				total_linhas_conflitantes+=numero_linhas_conflitantes
-				conflitos[caminho_completo] = numero_trechos_conflitantes
-			gr.git().merge('--abort')
-			gr.git().checkout('master')
-
-		print(('Processou par {}: {} - {}').format((contador + 1), c, commits_client[contador]))
-
-		conflitos_por_rodada[(contador + 1)] = (conflitos, total_trechos_conflitantes, total_linhas_conflitantes)
-		contador += 1
-	
-	print(conflitos_por_rodada)
-	title = 'Forkuptool'
-	subtitle = 'Simulação de conflitos'	
-	return render(request, 'simular_conflitos.html', locals())
-
 
 
 def comparar_repositorios(request):

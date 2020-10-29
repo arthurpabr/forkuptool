@@ -2,31 +2,41 @@
 
 {% block content %}
 {% if messages %} 
-	{% for msg, msg_class in messages %}
-		<div class="alert alert-{{ msg_class }}">{{ msg }}</div>
-	{% endfor %} 
+    {% for msg, msg_class in messages %}
+        <div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+    {% endfor %} 
 {% endif %}
 
 <h2>Módulo de análise de repositórios</h2>
-<h3>Simulação de conflitos de merge</h3>
-<table class="table table-sm table-bordered table-striped">
-    <thead>
-        <tr>
-            <th scope="col"># Rodada</th>
-            <th scope="col">Total de arquivos em conflito</th>
-            <th scope="col">Total de trechos em conflito</th>
-            <th scope="col">Total de linhas em conflito</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for rodada, conflitos in conflitos_por_rodada.items %}
-        <tr>
-            <td>{{ rodada }}</td>
-            <td>{{ conflitos.0.keys|length }}</td>
-            <td>{{ conflitos.1 }}</td>
-            <td>{{ conflitos.2 }}</td>
-        </tr>
+{% if configuracaoferramenta_obj %}
+    <div>
+        {{ configuracaoferramenta_obj.id }}</br />&nbsp;
+    </div>
+
+{% else %}
+
+    <p>Para realizar a simulaçao, defina antes a configuração a ser utilizada.</p>
+
+    <form class="form-horizontal" action="/simular_conflitos/" method="post" novalidate>
+        {% csrf_token %}
+        <div>
+            {% if form.non_field_errors %}
+                {{ form.non_field_errors }}
+            {% else %}  
+                &nbsp;
+            {% endif %}
+        </div>
+        {% for field in form %}
+        <div class="form-group" style="padding: 0 0 15px;">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+        </div>
         {% endfor %}
-    </tbody>
-</table>
+        <input class="btn btn-success" type="submit" value="Prosseguir" />&nbsp;&nbsp;&nbsp;
+        <a class="btn btn-info" href="{% url 'home' %}" role="button">Voltar</a>
+    </form> 
+
+{% endif %}
+
 {% endblock %}
