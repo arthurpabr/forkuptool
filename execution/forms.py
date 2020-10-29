@@ -6,6 +6,6 @@ class ExecutarFerramentaForm(forms.Form):
 		super(ExecutarFerramentaForm, self).__init__(*args, **kwargs)
 		self.fields['configuracaoferramenta_escolhida'].choices = configuracaoferramenta_choices
 
-	configuracaoferramenta_escolhida = forms.ChoiceField(label='Escolha uma configuração para executar a ferramenta', label_suffix=': ', \
+	configuracaoferramenta_escolhida = forms.ChoiceField(label='Escolha uma configuração', label_suffix=': ', \
 		required=True, choices=(), widget=forms.Select(attrs={'style':'width: 350px;'}))
 

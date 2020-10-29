@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if messages %} 
+	{% for msg, msg_class in messages %}
+		<div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+	{% endfor %} 
+{% endif %}
+
+<h2>Módulo de análise de repositórios</h2>
+<h3>Commits exclusivos do fork (repositório "client")</h3>
+<table class="table table-sm table-bordered table-striped">
+	<thead>
+		<tr>
+			<th scope="col">#</th>
+			<th scope="col">Data</th>
+			<th scope="col">Hash</th>
+			<th scope="col">Pais</th>
+			<th scope="col">Autor</th>
+			<th scope="col">É merge?</th>
+			<th scope="col">É merge com origem?</th>
+			<th scope="col">Mensagem</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for c in n_primeiros_commits_somente_client %}
+    	<tr>
+    		<td>{{ forloop.counter }}</td>
+    		<!-- <td>{{ c.author_date|date:'Y-m-d H:i' }}</td> -->
+    		<td>{{ c.author_date|date:'d/m/Y H:i' }}</td>
+    		<td>{{ c.hash|slice:'0:7' }}</td>
+
+    		<td>
+    			{% if c.parents %}
+	    			{% for p in c.parents %}
+	    			- {{ p|slice:'0:7' }}<br />
+	    			{% endfor %}
+    			{% else %}
+    				---
+    			{% endif %}
+	    	</td>
+
+    		<td>{{ c.author_name }}</td>
+    		<td>
+    			{% if c.merge %}
+    				<b>SIM</b>
+    			{% else %}
+    				NÃO
+    			{% endif %}
+
+			</td>
+			<td>
+    			{% if c.candidato_merge_vendor %}
+    				<b style="color: red">SIM</b>
+    			{% else %}
+    				NÃO
+    			{% endif %}
+
+			</td>
+    		<td>{{ c.msg|slice:'0:80' }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}

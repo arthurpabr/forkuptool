@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
 ]
 
 X_FRAME_OPTIONS='SAMEORIGIN'
@@ -149,3 +150,8 @@ LENGTH_INFO_CLIENT = 10000
 
 VALID_INSTRUCTIONS_SUFFIXES = ['add', 'remove', 'replace']
 REFACTORY_SUGGESTIONS_ENABLE = True
+
+GRAPH_MODELS = {
+  'all_applications': False,
+  'group_models': True,
+}

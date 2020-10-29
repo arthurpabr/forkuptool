@@ -9,8 +9,8 @@ from .utils_refactor import buscar_sugestoes_refatoramento_patch_file
 from configuration.models import ConfiguracaoFerramenta
 
 def index(request):
-    return render(request, 'execution.html', {'title': 'Forkuptool',
-    	'subtitle': 'Módulo de execução', 'messages': None, })
+    return render(request, 'execution.html', {'title': 'Forkuptool - Módulo de execução',
+    	'subtitle': 'Módulo de execução da ferramenta de customização', 'messages': None, })
 
 
 

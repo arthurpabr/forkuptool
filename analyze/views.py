@@ -12,6 +12,7 @@ from binaryornot.check import is_binary
 
 from .forms import AnalisarTimelineForm, CompararRepositoriosForm, \
 	VisualizarComparacaoRepositoriosForm
+from execution.forms import ExecutarFerramentaForm
 
 from configuration.models import ConfiguracaoGeral, ConfiguracaoFerramenta, \
 	ThreadTask, Comparacao, ArquivoVendor, ArquivoClient, ArquivosComparados, \
@@ -28,62 +29,89 @@ from .util import diff2HtmlCompare
 
 
 def index(request):
-    return render(request, 'analyze.html', {'title': 'Forkuptool',
-    	'subtitle': 'Módulo de análise de repositórios', 'messages': None, })
+    return render(request, 'analyze.html', {'title': 'Forkuptool - Módulo de análise de repositórios',
+    	'subtitle': 'Funcionalidades para análise do fork e sua origem', 'messages': None, })
 
 
 
 def info_criacao_client(request):
+	# busca as opções de configuração de execução da ferramenta registradas no banco de dados
+	configuracaoferramenta_choices = ConfiguracaoFerramenta.objects.all().order_by('-id')
+	configuracaoferramenta_choices_to_choicefield = list()
+	for configuracao in configuracaoferramenta_choices:
+		configuracaoferramenta_choices_to_choicefield.append([configuracao.pk,configuracao])
 
-	# busca a configuração para o SUAP
-	config = ConfiguracaoFerramenta.objects.get(id=2) 
-	repo_vendor = GitRepository(config.path_vendor)
-	repo_client = GitRepository(config.path_auxiliary_files)
-	commits_vendor = repo_vendor.get_list_commits()
-	list_hash_vendor = []
-	for c in commits_vendor:
-	    list_hash_vendor.append(c.hash)
-	commits_client = repo_client.get_list_commits()
-	list_hash_client = []
-	for c in commits_client:
-	    list_hash_client.append(c.hash)
-	hash_n_primeiros_commits_somente_client = []
-	n_primeiros_commits_somente_client = []
-	for c in list_hash_client:
-	    if c not in list_hash_vendor: 
-	        hash_n_primeiros_commits_somente_client.append(c)
-	        if len(hash_n_primeiros_commits_somente_client) == LENGTH_INFO_CLIENT:
-	            break
+	# se GET cria o formulário em branco
+	if request.method == 'GET':
+		form = ExecutarFerramentaForm(configuracaoferramenta_choices_to_choicefield)
+		title = 'Forkuptool - Módulo de análise de repositórios'
+		subtitle = 'Selecione uma configuração para continuar'
+		return render(request, 'info_criacao_client.html', locals())
+
+
+	# se POST será necessário processar os dados do formulário
+	elif request.method == 'POST':
+		configuracaoferramenta_escolhida = None
+
+		if 'configuracaoferramenta_escolhida' in request.POST:
+			configuracaoferramenta_escolhida = request.POST['configuracaoferramenta_escolhida']
+
+		if configuracaoferramenta_escolhida:
+			# busca a configuração para o id informado
+			config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
 	
-	for h in hash_n_primeiros_commits_somente_client:
-		commit_da_vez = repo_client.get_commit(h)
-		candidato_merge_vendor = False
-		if commit_da_vez.merge:
-			tem_pai_vendor = False
-			tmp_parents = commit_da_vez.parents
-			for p in tmp_parents:
-				if p in list_hash_vendor:
-					tem_pai_vendor = True
-			if tem_pai_vendor:
-				candidato_merge_vendor = True
+			repo_vendor = GitRepository(config.path_vendor)
+			repo_client = GitRepository(config.path_auxiliary_files)
+			commits_vendor = repo_vendor.get_list_commits()
+			list_hash_vendor = []
+			for c in commits_vendor:
+			    list_hash_vendor.append(c.hash)
+			commits_client = repo_client.get_list_commits()
+			list_hash_client = []
+			for c in commits_client:
+			    list_hash_client.append(c.hash)
+			hash_n_primeiros_commits_somente_client = []
+			n_primeiros_commits_somente_client = []
+			for c in list_hash_client:
+			    if c not in list_hash_vendor: 
+			        hash_n_primeiros_commits_somente_client.append(c)
+			        if len(hash_n_primeiros_commits_somente_client) == LENGTH_INFO_CLIENT:
+			            break
+			
+			for h in hash_n_primeiros_commits_somente_client:
+				commit_da_vez = repo_client.get_commit(h)
+				candidato_merge_vendor = False
+				if commit_da_vez.merge:
+					tem_pai_vendor = False
+					tmp_parents = commit_da_vez.parents
+					for p in tmp_parents:
+						if p in list_hash_vendor:
+							tem_pai_vendor = True
+					if tem_pai_vendor:
+						candidato_merge_vendor = True
 
-		info = {'author_date': commit_da_vez.author_date,\
-				'hash': commit_da_vez.hash,\
-				'parents': commit_da_vez.parents,\
-				'author_name': commit_da_vez.author.name,\
-				'merge': commit_da_vez.merge,\
-				'candidato_merge_vendor': candidato_merge_vendor,\
-				'msg': commit_da_vez.msg}
-		n_primeiros_commits_somente_client.append(info)
-		commit_da_vez = None
-		info = None
+				info = {'author_date': commit_da_vez.author_date,\
+						'hash': commit_da_vez.hash,\
+						'parents': commit_da_vez.parents,\
+						'author_name': commit_da_vez.author.name,\
+						'merge': commit_da_vez.merge,\
+						'candidato_merge_vendor': candidato_merge_vendor,\
+						'msg': commit_da_vez.msg}
+				n_primeiros_commits_somente_client.append(info)
+				commit_da_vez = None
+				info = None
 
-	for c in n_primeiros_commits_somente_client:
-	    print(('{} ({}) - {} - {} - {}').format(c['author_date'], c['hash'][0:7], c['author_name'], c['merge'], c['msg'][0:80]))
+			for c in n_primeiros_commits_somente_client:
+			    print(('{} ({}) - {} - {} - {}').format(c['author_date'], c['hash'][0:7], c['author_name'], c['merge'], c['msg'][0:80]))
 
-	title = 'Forkuptool'
-	subtitle = 'Informações de criação repositório client'	
-	return render(request, 'info_criacao_client.html', locals())
+			subtitle = 'Resultados de execução'
+			title = 'Forkuptool - Módulo de análise de repositórios'
+			subtitle = 'Informações de criação do fork (repositório client)'
+			return render(request, 'info_criacao_client_show.html', locals())
+
+		else:
+			messages.error(request, 'Necessário informar uma configuração')
+			return render(request, 'index.html', {'title': 'Forkuptool', 'subtitle': 'Bem-vindo', })
 
 
 

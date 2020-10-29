@@ -8,59 +8,35 @@
 {% endif %}
 
 <h2>Módulo de análise de repositórios</h2>
-<h3>Informações sobre criação do fork (repositório "client")</h3>
-<table class="table table-sm table-bordered table-striped">
-	<thead>
-		<tr>
-			<th scope="col">#</th>
-			<th scope="col">Data</th>
-			<th scope="col">Hash</th>
-			<th scope="col">Pais</th>
-			<th scope="col">Autor</th>
-			<th scope="col">É merge?</th>
-			<th scope="col">É merge com origem?</th>
-			<th scope="col">Mensagem</th>
-		</tr>
-	</thead>
-	<tbody>
-	{% for c in n_primeiros_commits_somente_client %}
-    	<tr>
-    		<td>{{ forloop.counter }}</td>
-    		<!-- <td>{{ c.author_date|date:'Y-m-d H:i' }}</td> -->
-    		<td>{{ c.author_date|date:'d/m/Y H:i' }}</td>
-    		<td>{{ c.hash|slice:'0:7' }}</td>
+{% if configuracaoferramenta_obj %}
+	<div>
+		{{ configuracaoferramenta_obj.id }}</br />&nbsp;
+	</div>
 
-    		<td>
-    			{% if c.parents %}
-	    			{% for p in c.parents %}
-	    			- {{ p|slice:'0:7' }}<br />
-	    			{% endfor %}
-    			{% else %}
-    				---
-    			{% endif %}
-	    	</td>
+{% else %}
 
-    		<td>{{ c.author_name }}</td>
-    		<td>
-    			{% if c.merge %}
-    				<b>SIM</b>
-    			{% else %}
-    				NÃO
-    			{% endif %}
+	<p>Para realizar a análise, defina antes a configuração a ser utilizada.</p>
 
-			</td>
-			<td>
-    			{% if c.candidato_merge_vendor %}
-    				<b style="color: red">SIM</b>
-    			{% else %}
-    				NÃO
-    			{% endif %}
+	<form class="form-horizontal" action="/info_criacao_client/" method="post" novalidate>
+	    {% csrf_token %}
+	    <div>
+			{% if form.non_field_errors %}
+				{{ form.non_field_errors }}
+			{% else %}	
+				&nbsp;
+			{% endif %}
+		</div>
+	    {% for field in form %}
+		<div class="form-group" style="padding: 0 0 15px;">
+			{{ field.label_tag }}
+			{{ field }}
+			{{ field.errors }}
+		</div>
+		{% endfor %}
+		<input class="btn btn-success" type="submit" value="Prosseguir" />&nbsp;&nbsp;&nbsp;
+		<a class="btn btn-info" href="{% url 'home' %}" role="button">Voltar</a>
+	</form> 
 
-			</td>
-    		<td>{{ c.msg|slice:'0:80' }}</td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
+{% endif %}
 
 {% endblock %}
