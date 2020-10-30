@@ -26,7 +26,7 @@ class CompararRepositoriosForm(forms.Form):
 		super(CompararRepositoriosForm, self).__init__(*args, **kwargs)
 		self.fields['configuracaogeral_escolhida'].choices = configuracaogeral_choices
 
-	configuracaogeral_escolhida = forms.ChoiceField(label='Escolha uma configuração para executar a comparação', label_suffix=': ', \
+	configuracaogeral_escolhida = forms.ChoiceField(label='Escolha uma configuração', label_suffix=': ', \
 		required=True, choices=(), widget=forms.Select(attrs={'style':'width: 350px;'}))
 
 

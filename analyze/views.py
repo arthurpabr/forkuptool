@@ -251,7 +251,7 @@ def simular_conflitos(request):
 			gr = GitRepository(config.path_auxiliary_files)
 
 			#TODO: mudar a selação dos commits, que hoje é fixo
-			
+
 			# commits_vendor = (
 			# 	'fca529f', 'a639855', '168e36a', '48374cd', 'e0428a2', 
 			# 	'49275f2', '25ad58d', 'd7c1bdf', '75c8a35', '41f8ace', 
@@ -362,7 +362,7 @@ def comparar_repositorios(request):
 	# se GET cria o formulário em branco
 	else:
 		form = CompararRepositoriosForm(configuracaogeral_choices_to_choicefield)
-	title = 'Forkuptool'
+	title = 'Forkuptool - Módulo de análise de repositórios'
 	subtitle = 'Realizar comparação entre repositórios'
 	return render(request, 'comparar_repositorios.html', locals())
 
@@ -595,7 +595,7 @@ def visualizar_comparacao_repositorios(request, id = None):
 	else:
 		form = VisualizarComparacaoRepositoriosForm(comparacao_choices_to_choicefield)
 
-	title = 'Forkuptool'
+	title = 'Forkuptool - Módulo de análise de repositórios'
 	subtitle = 'Visualizar comparação entre repositórios'
 	return render(request, 'visualizar_comparacao_repositorios.html', locals())
 
