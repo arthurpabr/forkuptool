@@ -21,8 +21,8 @@ class ConfiguracaoGeral(models.Model):
 	path_repositorio_client = models.CharField(u'Caminho completo do repositório cliente', null=False, blank=False, max_length=150)
 
 	class Meta:
-		verbose_name = u'Configuração geral do projeto'
-		verbose_name_plural = u'Configurações gerais do projeto'
+		verbose_name = u'Configuração para comparação de projetos'
+		verbose_name_plural = u'Configurações para comparação de projetos'
 
 	def __str__(self):
 		return ('id {} - {}').format(self.pk, self.descricao)
@@ -332,8 +332,8 @@ class ConfiguracaoFerramenta(models.Model):
 	path_patch_files = models.CharField(u'Caminho completo dos arquivos de patch', null=False, blank=False, max_length=150)
 
 	class Meta:
-		verbose_name = u'Configuração de execução da ferramenta'
-		verbose_name_plural = u'Configurações de execução da ferramenta'
+		verbose_name = u'Configuração para levantamento de informações rep. origem, simulação de conflitos e execução da customização'
+		verbose_name_plural = u'Configurações para levantamento de informações rep. origem, simulação de conflitos e execução da customização'
 
 	def __str__(self):
 		return ('id {} - {}').format(self.pk, self.description)
