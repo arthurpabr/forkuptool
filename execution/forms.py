@@ -8,4 +8,5 @@ class ExecutarFerramentaForm(forms.Form):
 
 	configuracaoferramenta_escolhida = forms.ChoiceField(label='Escolha uma configuração', label_suffix=': ', \
 		required=True, choices=(), widget=forms.Select(attrs={'style':'width: 350px;'}))
-
+	nome_branch_forkeado = forms.CharField(max_length=50,label='Nome da branch do repositório forkeado')
+	nome_branch_origem = forms.CharField(max_length=50,label='Nome da branch do repositório origem')

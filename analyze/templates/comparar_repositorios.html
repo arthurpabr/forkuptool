@@ -4,7 +4,7 @@
 {% block content %}
 {% if messages %} 
     {% for msg, msg_class in messages %}
-        <div class="alert alert-{{ msg_class }}">{{ msg }}</div>
+        <div class="{{ msg_class }}">{{ msg }}</div>
     {% endfor %} 
 {% endif %}
 

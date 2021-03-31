@@ -2,9 +2,11 @@ import json
 import threading
 import os
 import filecmp
+import subprocess
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.contrib import messages
 
 from pydriller import RepositoryMining, GitRepository
 from datetime import datetime
@@ -22,7 +24,7 @@ from forkuptool.settings import LENGTH_INFO_CLIENT
 
 from .utils import identificar_arquivos_em_conflito, \
 	contar_ocorrencias_desta_linha_neste_arquivo, \
-	contar_linhas_entre_esses_linhas_neste_arquivo, \
+	identificar_intervalos_trechos_conflitantes, \
 	buscar_detalhes_diff_entre_arquivos, check_thread_task
 
 from .util import diff2HtmlCompare
@@ -224,6 +226,11 @@ def analisar_timeline(request):
 
 
 def simular_conflitos(request):
+	# A simulação dos conflitos é realizada dentro de um mesmo projeto, 
+	# que deve ter uma branch específica para o projeto forkeado, e 
+	# outra branch específica para o pojeto original. O nome das duas 
+	# branches são passados como parẫmetro
+
 	# busca as opções de configuração de execução da ferramenta registradas no banco de dados
 	configuracaoferramenta_choices = ConfiguracaoFerramenta.objects.all().order_by('-id')
 	configuracaoferramenta_choices_to_choicefield = list()
@@ -241,106 +248,83 @@ def simular_conflitos(request):
 	# se POST será necessário processar os dados do formulário
 	elif request.method == 'POST':
 		configuracaoferramenta_escolhida = None
+		nome_branch_forkeado = request.POST['nome_branch_forkeado']
+		nome_branch_origem = request.POST['nome_branch_origem']
 
 		if 'configuracaoferramenta_escolhida' in request.POST:
 			configuracaoferramenta_escolhida = request.POST['configuracaoferramenta_escolhida']
 
-		if configuracaoferramenta_escolhida:
+		if configuracaoferramenta_escolhida and nome_branch_forkeado and nome_branch_origem:
+			
+			logs_de_execucao = []
+			arquivos_com_conflito = []
+			arquivos_e_trechos = dict()
+
 			# busca a configuração para o id informado
 			config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
 			gr = GitRepository(config.path_auxiliary_files)
 
-			#TODO: mudar a selação dos commits, que hoje é fixo
-
-			# commits_vendor = (
-			# 	'fca529f', 'a639855', '168e36a', '48374cd', 'e0428a2', 
-			# 	'49275f2', '25ad58d', 'd7c1bdf', '75c8a35', '41f8ace', 
-			# 	'69e7a98', 'a8f4829', 'be98898', 'f7e815a', '03f178c', 
-			# 	'fc7af49', '74a8748', 'a58320e', '1d4fa85', '855e138', 
-			# 	'671aaa8', '06a967e', '048aa85', '9119a3f', 'a74d6ae', 
-			# 	'bb83f28', '8f5e756', '83610c5', '5c5fc7d', '5e74902', 
-			# 	'ce59547', '923f5ee', 'df8666d', 'c219a97', 'aefcd22', 
-			# 	'0be9ee9', 'bb3c479', 'e0557a0', 'f02b0c3', '8d5cdfa', 
-			# 	'e944c53', 
-			# 	'0a93957',)
-			commits_vendor = (
-				'48d1edb',)
+			# atualiza as duas branches, fazendo uso de shell script externo
+			shell_result = subprocess.run(["./atualizar_branches.sh",nome_branch_origem,nome_branch_forkeado], stdout=subprocess.PIPE)
+			shell_result_as_string = shell_result.stdout.decode('utf-8')
+			for r in shell_result_as_string.split('\n'):
+				logs_de_execucao.append(r)
 			
-			# commits_client = (
-			# 	'a9cb50e', '085aa2a', '66165fd', '6eb4d4c', '353a877', 
-			# 	'b1bf9fe', '7891bb7', '70ddc11', '6a858e2', 'bbc8bea', 
-			# 	'df85d8e', 'b57eca7', '914f9b1', 'e8faf15', '3a1a355', 
-			# 	'da45411', '53464c7', '75f241c', '1e8e20b', '7c9583c',
-			#     '7482e54', 'a2c2ae2', 'dc18528', '5b308d9', 'fc62c99', 
-			# 	'2977dbf', '90aa392', 'd2c2f36', 'e083730', '2edc4b3', 
-			# 	'3328138', '3595f20', 'd6b40e5', '1c82a62', '757c692', 
-			# 	'0230fb0', '3094585', '43a6ab3', '151f8a3', 'ec90a78', 
-			# 	'5a51d1a', 
-			# 	'287f6ed',)
-			commits_client = (
-				'd472976',)
+			gr.git().checkout(nome_branch_forkeado)
+			hash_ultimo_commit_forkeado = gr.get_head().hash[0:7]
+			print(hash_ultimo_commit_forkeado)
+			gr.git().checkout(nome_branch_origem)
+			hash_ultimo_commit_origem = gr.get_head().hash[0:7]
+			print(hash_ultimo_commit_origem)
+			gr.git().checkout(nome_branch_forkeado)
+			nome_branch_merge = 'merge_origem_'+str(hash_ultimo_commit_origem)
+			nome_branch_merge+= '_forkeado_'+str(hash_ultimo_commit_forkeado)
+			gr.git().branch(nome_branch_merge)
+			gr.git().checkout(nome_branch_merge)
 
+			try:
+				# tenta fazer o merge; se executar sem erros é porque não houve conflito
+				gr.git().merge(nome_branch_origem)
+			except Exception as e:
+				linhas_com_erro = str(e)
+				linhas_com_erro = linhas_com_erro.split('\n')
+				arquivos_com_conflito = identificar_arquivos_em_conflito(linhas_com_erro)
 
-			contador = 0
-			conflitos_por_rodada = dict()
-			for c in commits_vendor:
-				total_trechos_conflitantes = 0
-				total_linhas_conflitantes = 0
-				conflitos = dict()
+				for a in arquivos_com_conflito:
+					#numero_trechos_conflitantes = 0
+					linhas_conflitantes = []
+					caminho_completo = gr.path.as_posix()+'/'+a
+					if not is_binary(caminho_completo):
+						#numero_trechos_conflitantes = contar_ocorrencias_desta_linha_neste_arquivo(
+		 				#'<<<<<<< HEAD', caminho_completo)
+						linhas_conflitantes = identificar_intervalos_trechos_conflitantes(
+					    '<<<<<<< HEAD', '>>>>>>> '+nome_branch_origem, caminho_completo)
+					else:
+						#numero_trechos_conflitantes = 1
+						linhas_conflitantes.append(('todo o arquivo', 'arquivo binário'))
 
-				gr.git().checkout('master')
-				gr.git().checkout(c)
-				branch_vendor = 't'+str(contador+1)+'vendor'
-				gr.git().branch(branch_vendor)
-				gr.git().checkout('master')
-				gr.checkout(commits_client[contador])
-				branch_client = 't'+str(contador+1)+'client'
-				gr.git().branch(branch_client)
-				branch_merge = 't'+str(contador+1)+'merge'
-				gr.git().branch(branch_merge)
-				gr.git().checkout(branch_merge)
+					arquivos_e_trechos[caminho_completo] = linhas_conflitantes
+				gr.git().merge('--abort')
 
-				try:
-					# tenta fazer o merge; se executar sem erros é porque não houve conflito
-					gr.git().merge(branch_vendor)
-				except Exception as e:
-					linhas_com_erro = str(e)
-					linhas_com_erro = linhas_com_erro.split('\n')
-					arquivos_com_conflito = identificar_arquivos_em_conflito(linhas_com_erro)
+			gr.git().checkout('master')
+			# apaga a branch do merge, fazendo uso de shell script externo
+			shell_result = subprocess.run(["./apagar_branch.sh",nome_branch_merge], stdout=subprocess.PIPE)
+			shell_result_as_string = shell_result.stdout.decode('utf-8')
+			for r in shell_result_as_string.split('\n'):
+				logs_de_execucao.append(r)
 
-					for a in arquivos_com_conflito:
-						numero_trechos_conflitantes = 0
-						numero_linhas_conflitantes = 0
-						caminho_completo = gr.path.as_posix()+'/'+a
-						if not is_binary(caminho_completo):
-							numero_trechos_conflitantes = contar_ocorrencias_desta_linha_neste_arquivo(
-							'<<<<<<< HEAD', caminho_completo)
-							numero_linhas_conflitantes = contar_linhas_entre_esses_linhas_neste_arquivo(
-							    '<<<<<<< HEAD', '=======', caminho_completo)
-						else:
-							numero_trechos_conflitantes = 1
-							numero_linhas_conflitantes = 1
-						total_trechos_conflitantes+=numero_trechos_conflitantes
-						total_linhas_conflitantes+=numero_linhas_conflitantes
-						conflitos[caminho_completo] = numero_trechos_conflitantes
-					gr.git().merge('--abort')
-					gr.git().checkout('master')
-
-				print(('Processou par {}: {} - {}').format((contador + 1), c, commits_client[contador]))
-
-				conflitos_por_rodada[(contador + 1)] = (conflitos, total_trechos_conflitantes, total_linhas_conflitantes)
-				contador += 1
-			
-			print(conflitos_por_rodada)
+			print(logs_de_execucao)
+			print(arquivos_e_trechos)
 			title = 'Forkuptool - Módulo de análise de repositórios'
 			subtitle = 'Simulação de conflitos de mesclagem'	
 			return render(request, 'simular_conflitos_show.html', locals())
 
 		else:
-			messages.error(request, 'Necessário informar uma configuração')
-			return render(request, 'index.html', {'title': 'Forkuptool', 'subtitle': 'Bem-vindo', })
-
-	
+			form = ExecutarFerramentaForm(configuracaoferramenta_choices_to_choicefield)
+			messages = {('Necessário informar todos os campos', 'errornote')}
+			title = 'Forkuptool - Módulo de análise de repositórios'
+			subtitle = 'Simulação de conflitos de mesclagem'			
+			return render(request, 'simular_conflitos.html', locals())
 
 
 def comparar_repositorios(request):

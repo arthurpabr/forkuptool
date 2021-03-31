@@ -34,21 +34,22 @@ def contar_ocorrencias_desta_linha_neste_arquivo(esta_linha, este_arquivo):
 
 
 
-def contar_linhas_entre_esses_linhas_neste_arquivo(linha_1, linha_2, este_arquivo):
+def identificar_intervalos_trechos_conflitantes(linha_1, linha_2, este_arquivo):
 	linhas = ler_conteudo_de_arquivo(este_arquivo)
-	contador = 0
-	contar = False
+	ponteiro_atual = 0
+	ponteiro_linha_inicio_intervalo = None
+	intervalos = []
 	if linhas:
 		for l in linhas:
+			ponteiro_atual+=1
 			l = l.rstrip('\n')
 			l = l.rstrip(' ')
 			if l == linha_1:
-				contar = True
-			if contar:
-				contador+=1
+				ponteiro_linha_inicio_intervalo = ponteiro_atual
 			if l == linha_2:
-				contar = False
-	return contador
+				intervalos.append((ponteiro_linha_inicio_intervalo,ponteiro_atual))
+				ponteiro_linha_inicio_intervalo = None
+	return intervalos
 
 
 
