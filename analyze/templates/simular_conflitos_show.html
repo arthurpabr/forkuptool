@@ -9,24 +9,60 @@
 
 <h2>Módulo de análise de repositórios</h2>
 <h3>Simulação de conflitos de merge</h3>
+<p>&nbsp;</p>
+
+<p>Logs de execução</p>
 <table class="table table-sm table-bordered table-striped">
     <thead>
         <tr>
-            <th scope="col"># Rodada</th>
-            <th scope="col">Total de arquivos em conflito</th>
-            <th scope="col">Total de trechos em conflito</th>
-            <th scope="col">Total de linhas em conflito</th>
+            <th scope="col">#</th>
+            <th scope="col">Mensagem</th>
         </tr>
     </thead>
     <tbody>
-        {% for rodada, conflitos in conflitos_por_rodada.items %}
+        {% for log in logs_de_execucao %}
         <tr>
-            <td>{{ rodada }}</td>
-            <td>{{ conflitos.0.keys|length }}</td>
-            <td>{{ conflitos.1 }}</td>
-            <td>{{ conflitos.2 }}</td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ log }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>Conflitos</p>
+<table class="table table-sm table-bordered table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Arquivo</th>
+            <th scope="col" colspan="{{ numero_max_colunas }}">Conflitos</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for arquivo, resultado_por_arquivo in arquivos_e_trechos.items %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ arquivo }}</td>
+            {% for r in resultado_por_arquivo %}
+                <td>{{ r }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<p>
+    <a class="btn btn-info btn-mini" href="{% url 'simular_conflitos_xls' configuracaoferramenta_escolhida nome_branch_origem nome_branch_forkeado %}" role="button">Exportar para XLS</a>
+</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<p>
+    <a class="btn btn-info btn-mini" href="{% url 'simular_conflitos' %}" role="button">Simular novamente</a>
+</p>
+
 {% endblock %}

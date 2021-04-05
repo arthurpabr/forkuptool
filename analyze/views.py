@@ -3,9 +3,10 @@ import threading
 import os
 import filecmp
 import subprocess
+import xlwt
 
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 
 from pydriller import RepositoryMining, GitRepository
@@ -225,6 +226,73 @@ def analisar_timeline(request):
 
 
 
+def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado):
+	logs_de_execucao = []
+	arquivos_com_conflito = []
+	arquivos_e_trechos = dict()
+
+	# busca a configuração para o id informado
+	config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
+	gr = GitRepository(config.path_auxiliary_files)
+
+	# atualiza as duas branches, fazendo uso de shell script externo
+	shell_result = subprocess.run(["./atualizar_branches.sh",nome_branch_origem,nome_branch_forkeado], stdout=subprocess.PIPE)
+	shell_result_as_string = shell_result.stdout.decode('utf-8')
+	for r in shell_result_as_string.split('\n'):
+		logs_de_execucao.append(r)
+	
+	logs_de_execucao.append('Capturando último hash da branch '+nome_branch_forkeado)
+	gr.git().checkout(nome_branch_forkeado)
+	hash_ultimo_commit_forkeado = gr.get_head().hash[0:7]
+	print(hash_ultimo_commit_forkeado)
+	logs_de_execucao.append('Capturando último hash da branch '+nome_branch_origem)
+	gr.git().checkout(nome_branch_origem)
+	hash_ultimo_commit_origem = gr.get_head().hash[0:7]
+	print(hash_ultimo_commit_origem)
+	gr.git().checkout(nome_branch_forkeado)
+	nome_branch_merge = 'merge_origem_'+str(hash_ultimo_commit_origem)
+	nome_branch_merge+= '_forkeado_'+str(hash_ultimo_commit_forkeado)
+	logs_de_execucao.append('Criando branch de merge: '+nome_branch_merge)
+	gr.git().branch(nome_branch_merge)
+	gr.git().checkout(nome_branch_merge)
+
+	logs_de_execucao.append('Fazendo o merge')
+	try:
+		# tenta fazer o merge; se executar sem erros é porque não houve conflito
+		gr.git().merge(nome_branch_origem)
+	except Exception as e:
+		linhas_com_erro = str(e)
+		linhas_com_erro = linhas_com_erro.split('\n')
+		arquivos_com_conflito = identificar_arquivos_em_conflito(linhas_com_erro)
+
+		for a in arquivos_com_conflito:
+			#numero_trechos_conflitantes = 0
+			linhas_conflitantes = []
+			caminho_completo = gr.path.as_posix()+'/'+a
+			if not is_binary(caminho_completo):
+				#numero_trechos_conflitantes = contar_ocorrencias_desta_linha_neste_arquivo(
+ 				#'<<<<<<< HEAD', caminho_completo)
+				linhas_conflitantes = identificar_intervalos_trechos_conflitantes(
+			    '<<<<<<< HEAD', '>>>>>>> '+nome_branch_origem, caminho_completo)
+			else:
+				#numero_trechos_conflitantes = 1
+				linhas_conflitantes.append(('todo o arquivo', 'arquivo binário'))
+
+			arquivos_e_trechos[caminho_completo] = linhas_conflitantes
+		gr.git().merge('--abort')
+
+	logs_de_execucao.append('Desfazendo o merge')
+	gr.git().checkout('master')
+	# apaga a branch do merge, fazendo uso de shell script externo
+	shell_result = subprocess.run(["./apagar_branch.sh",nome_branch_merge], stdout=subprocess.PIPE)
+	shell_result_as_string = shell_result.stdout.decode('utf-8')
+	for r in shell_result_as_string.split('\n'):
+		logs_de_execucao.append(r)
+
+	return (logs_de_execucao, arquivos_e_trechos)
+
+
+
 def simular_conflitos(request):
 	# A simulação dos conflitos é realizada dentro de um mesmo projeto, 
 	# que deve ter uma branch específica para o projeto forkeado, e 
@@ -255,66 +323,22 @@ def simular_conflitos(request):
 			configuracaoferramenta_escolhida = request.POST['configuracaoferramenta_escolhida']
 
 		if configuracaoferramenta_escolhida and nome_branch_forkeado and nome_branch_origem:
-			
-			logs_de_execucao = []
-			arquivos_com_conflito = []
-			arquivos_e_trechos = dict()
-
-			# busca a configuração para o id informado
-			config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
-			gr = GitRepository(config.path_auxiliary_files)
-
-			# atualiza as duas branches, fazendo uso de shell script externo
-			shell_result = subprocess.run(["./atualizar_branches.sh",nome_branch_origem,nome_branch_forkeado], stdout=subprocess.PIPE)
-			shell_result_as_string = shell_result.stdout.decode('utf-8')
-			for r in shell_result_as_string.split('\n'):
-				logs_de_execucao.append(r)
-			
-			gr.git().checkout(nome_branch_forkeado)
-			hash_ultimo_commit_forkeado = gr.get_head().hash[0:7]
-			print(hash_ultimo_commit_forkeado)
-			gr.git().checkout(nome_branch_origem)
-			hash_ultimo_commit_origem = gr.get_head().hash[0:7]
-			print(hash_ultimo_commit_origem)
-			gr.git().checkout(nome_branch_forkeado)
-			nome_branch_merge = 'merge_origem_'+str(hash_ultimo_commit_origem)
-			nome_branch_merge+= '_forkeado_'+str(hash_ultimo_commit_forkeado)
-			gr.git().branch(nome_branch_merge)
-			gr.git().checkout(nome_branch_merge)
-
-			try:
-				# tenta fazer o merge; se executar sem erros é porque não houve conflito
-				gr.git().merge(nome_branch_origem)
-			except Exception as e:
-				linhas_com_erro = str(e)
-				linhas_com_erro = linhas_com_erro.split('\n')
-				arquivos_com_conflito = identificar_arquivos_em_conflito(linhas_com_erro)
-
-				for a in arquivos_com_conflito:
-					#numero_trechos_conflitantes = 0
-					linhas_conflitantes = []
-					caminho_completo = gr.path.as_posix()+'/'+a
-					if not is_binary(caminho_completo):
-						#numero_trechos_conflitantes = contar_ocorrencias_desta_linha_neste_arquivo(
-		 				#'<<<<<<< HEAD', caminho_completo)
-						linhas_conflitantes = identificar_intervalos_trechos_conflitantes(
-					    '<<<<<<< HEAD', '>>>>>>> '+nome_branch_origem, caminho_completo)
-					else:
-						#numero_trechos_conflitantes = 1
-						linhas_conflitantes.append(('todo o arquivo', 'arquivo binário'))
-
-					arquivos_e_trechos[caminho_completo] = linhas_conflitantes
-				gr.git().merge('--abort')
-
-			gr.git().checkout('master')
-			# apaga a branch do merge, fazendo uso de shell script externo
-			shell_result = subprocess.run(["./apagar_branch.sh",nome_branch_merge], stdout=subprocess.PIPE)
-			shell_result_as_string = shell_result.stdout.decode('utf-8')
-			for r in shell_result_as_string.split('\n'):
-				logs_de_execucao.append(r)
+			logs_de_execucao = None
+			arquivos_e_trechos = None
+			logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado)
+			logs_de_execucao = logs_e_arquivos[0]
+			arquivos_e_trechos = logs_e_arquivos[1]
 
 			print(logs_de_execucao)
-			print(arquivos_e_trechos)
+
+			# definindo o número de colunas para exibição
+			numero_max_colunas = 0
+			max_da_vez = 0
+			for arquivo, trechos in arquivos_e_trechos.items():
+				if len(trechos) > max_da_vez:
+					max_da_vez = len(trechos)
+			numero_max_colunas = max_da_vez+2
+
 			title = 'Forkuptool - Módulo de análise de repositórios'
 			subtitle = 'Simulação de conflitos de mesclagem'	
 			return render(request, 'simular_conflitos_show.html', locals())
@@ -325,6 +349,52 @@ def simular_conflitos(request):
 			title = 'Forkuptool - Módulo de análise de repositórios'
 			subtitle = 'Simulação de conflitos de mesclagem'			
 			return render(request, 'simular_conflitos.html', locals())
+
+
+
+def simular_conflitos_xls(request, configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado):
+	print(('configuracao: {}, branch origem: {}, branch forkeado: {}').format(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado))
+
+	logs_de_execucao = None
+	arquivos_e_trechos = None
+	logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado)
+	logs_de_execucao = logs_e_arquivos[0]
+	arquivos_e_trechos = logs_e_arquivos[1]
+
+	print(logs_de_execucao)
+
+	response = HttpResponse(content_type='application/ms-excel')
+	response['Content-Disposition'] = 'attachment; filename="conflitos.xls"'
+
+	wb = xlwt.Workbook(encoding='utf-8')
+	ws = wb.add_sheet('Conflitos')
+
+	# Sheet header, first row
+	row_num = 0
+
+	font_style = xlwt.XFStyle()
+	font_style.font.bold = True
+
+	columns = ['Arquivo', 'Trechos em conflito', ]
+
+	for col_num in range(len(columns)):
+		ws.write(row_num, col_num, columns[col_num], font_style)
+
+	# Sheet body, remaining rows
+	font_style = xlwt.XFStyle()
+
+	#rows = User.objects.all().values_list('username', 'first_name', 'last_name', 'email')
+	for arquivo, resultado_por_arquivo in arquivos_e_trechos.items():
+		row_num += 1
+		col_num = 0
+		ws.write(row_num, col_num, arquivo, font_style)
+		for r in resultado_por_arquivo:
+			col_num+=1
+			ws.write(row_num, col_num, str(r), font_style)
+
+	wb.save(response)
+	return response
+
 
 
 def comparar_repositorios(request):
