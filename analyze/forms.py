@@ -40,3 +40,14 @@ class VisualizarComparacaoRepositoriosForm(forms.Form):
 		required=True, choices=(), widget=forms.Select(attrs={'style':'width: 350px;'}))
 
 
+class SimularConflitosForm(forms.Form):
+
+	def __init__(self, configuracaoferramenta_choices, *args, **kwargs):
+		super(SimularConflitosForm, self).__init__(*args, **kwargs)
+		self.fields['configuracaoferramenta_escolhida'].choices = configuracaoferramenta_choices
+
+	configuracaoferramenta_escolhida = forms.ChoiceField(label='Escolha uma configuração', label_suffix=': ', \
+		required=True, choices=(), widget=forms.Select(attrs={'style':'width: 350px;'}))
+	nome_branch_forkeado = forms.CharField(max_length=50,label='Nome da branch do repositório forkeado')
+	nome_branch_origem = forms.CharField(max_length=50,label='Nome da branch do repositório origem')
+	apagar_branch_merge = forms.BooleanField(initial=False, required=True, label='Apagar branch de merge?')

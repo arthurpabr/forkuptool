@@ -14,7 +14,7 @@ from datetime import datetime
 from binaryornot.check import is_binary 
 
 from .forms import AnalisarTimelineForm, CompararRepositoriosForm, \
-	VisualizarComparacaoRepositoriosForm
+	VisualizarComparacaoRepositoriosForm, SimularConflitosForm
 from execution.forms import ExecutarFerramentaForm
 
 from configuration.models import ConfiguracaoGeral, ConfiguracaoFerramenta, \
@@ -226,7 +226,7 @@ def analisar_timeline(request):
 
 
 
-def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado):
+def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado, apagar_branch_merge):
 	logs_de_execucao = []
 	arquivos_com_conflito = []
 	arquivos_e_trechos = dict()
@@ -250,17 +250,22 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, n
 	hash_ultimo_commit_origem = gr.get_head().hash[0:7]
 	print(hash_ultimo_commit_origem)
 	gr.git().checkout(nome_branch_forkeado)
+	str_time = str(datetime.timestamp(datetime.now())).split('.')[0]
 	nome_branch_merge = 'merge_origem_'+str(hash_ultimo_commit_origem)
 	nome_branch_merge+= '_forkeado_'+str(hash_ultimo_commit_forkeado)
+	nome_branch_merge+= '_t'+str_time
 	logs_de_execucao.append('Criando branch de merge: '+nome_branch_merge)
 	gr.git().branch(nome_branch_merge)
 	gr.git().checkout(nome_branch_merge)
 
 	logs_de_execucao.append('Fazendo o merge')
+	houve_conflitos = False
 	try:
 		# tenta fazer o merge; se executar sem erros é porque não houve conflito
 		gr.git().merge(nome_branch_origem)
+
 	except Exception as e:
+		houve_conflitos = True
 		linhas_com_erro = str(e)
 		linhas_com_erro = linhas_com_erro.split('\n')
 		arquivos_com_conflito = identificar_arquivos_em_conflito(linhas_com_erro)
@@ -279,15 +284,21 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, n
 				linhas_conflitantes.append(('todo o arquivo', 'arquivo binário'))
 
 			arquivos_e_trechos[caminho_completo] = linhas_conflitantes
-		gr.git().merge('--abort')
 
-	logs_de_execucao.append('Desfazendo o merge')
-	gr.git().checkout('master')
-	# apaga a branch do merge, fazendo uso de shell script externo
-	shell_result = subprocess.run(["./apagar_branch.sh",nome_branch_merge], stdout=subprocess.PIPE)
-	shell_result_as_string = shell_result.stdout.decode('utf-8')
-	for r in shell_result_as_string.split('\n'):
-		logs_de_execucao.append(r)
+	if houve_conflitos and apagar_branch_merge:
+		gr.git().merge('--abort')
+		gr.git().checkout('master')
+		logs_de_execucao.append('Desfazendo o merge')
+		# apaga a branch do merge, fazendo uso de shell script externo
+		shell_result = subprocess.run(["./apagar_branch.sh",nome_branch_merge], stdout=subprocess.PIPE)
+		shell_result_as_string = shell_result.stdout.decode('utf-8')
+		for r in shell_result_as_string.split('\n'):
+			logs_de_execucao.append(r)
+
+	elif houve_conflitos and not apagar_branch_merge:
+		gr.git().add('.')
+		gr.git().commit('-m "Commit SEM resolver conflitos"')
+		gr.git().checkout('master')
 
 	return (logs_de_execucao, arquivos_e_trechos)
 
@@ -307,7 +318,7 @@ def simular_conflitos(request):
 
 	# se GET cria o formulário em branco
 	if request.method == 'GET':
-		form = ExecutarFerramentaForm(configuracaoferramenta_choices_to_choicefield)
+		form = SimularConflitosForm(configuracaoferramenta_choices_to_choicefield)
 		title = 'Forkuptool - Módulo de análise de repositórios'
 		subtitle = 'Selecione uma configuração para continuar'
 		return render(request, 'simular_conflitos.html', locals())
@@ -316,16 +327,26 @@ def simular_conflitos(request):
 	# se POST será necessário processar os dados do formulário
 	elif request.method == 'POST':
 		configuracaoferramenta_escolhida = None
+		apagar_branch_merge = None
 		nome_branch_forkeado = request.POST['nome_branch_forkeado']
 		nome_branch_origem = request.POST['nome_branch_origem']
 
 		if 'configuracaoferramenta_escolhida' in request.POST:
 			configuracaoferramenta_escolhida = request.POST['configuracaoferramenta_escolhida']
 
+		if 'apagar_branch_merge' in request.POST:
+			apagar_branch_merge = request.POST['apagar_branch_merge']
+
+		if apagar_branch_merge:
+			apagar_branch_merge = True
+		else:
+			apagar_branch_merge = False
+
 		if configuracaoferramenta_escolhida and nome_branch_forkeado and nome_branch_origem:
 			logs_de_execucao = None
 			arquivos_e_trechos = None
-			logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado)
+			logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
+				nome_branch_forkeado, apagar_branch_merge)
 			logs_de_execucao = logs_e_arquivos[0]
 			arquivos_e_trechos = logs_e_arquivos[1]
 
@@ -339,12 +360,15 @@ def simular_conflitos(request):
 					max_da_vez = len(trechos)
 			numero_max_colunas = max_da_vez+2
 
+			print(('configuracao: {}, branch origem: {}, branch forkeado: {}, apagar branch merge: {}')\
+				.format(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado, apagar_branch_merge))
+
 			title = 'Forkuptool - Módulo de análise de repositórios'
 			subtitle = 'Simulação de conflitos de mesclagem'	
 			return render(request, 'simular_conflitos_show.html', locals())
 
 		else:
-			form = ExecutarFerramentaForm(configuracaoferramenta_choices_to_choicefield)
+			form = SimularConflitosForm(configuracaoferramenta_choices_to_choicefield)
 			messages = {('Necessário informar todos os campos', 'errornote')}
 			title = 'Forkuptool - Módulo de análise de repositórios'
 			subtitle = 'Simulação de conflitos de mesclagem'			
@@ -352,12 +376,14 @@ def simular_conflitos(request):
 
 
 
-def simular_conflitos_xls(request, configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado):
-	print(('configuracao: {}, branch origem: {}, branch forkeado: {}').format(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado))
+def simular_conflitos_xls(request, configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado, apagar_branch_merge):
+	print(('configuracao: {}, branch origem: {}, branch forkeado: {}, apagar branch merge: {}')\
+		.format(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado, apagar_branch_merge))
 
 	logs_de_execucao = None
 	arquivos_e_trechos = None
-	logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado)
+	logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
+		nome_branch_forkeado, apagar_branch_merge)
 	logs_de_execucao = logs_e_arquivos[0]
 	arquivos_e_trechos = logs_e_arquivos[1]
 
