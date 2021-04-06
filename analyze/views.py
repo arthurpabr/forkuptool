@@ -26,7 +26,8 @@ from forkuptool.settings import LENGTH_INFO_CLIENT
 from .utils import identificar_arquivos_em_conflito, \
 	contar_ocorrencias_desta_linha_neste_arquivo, \
 	identificar_intervalos_trechos_conflitantes, \
-	buscar_detalhes_diff_entre_arquivos, check_thread_task
+	buscar_detalhes_diff_entre_arquivos, check_thread_task, \
+	identificar_estatisticas_de_autores
 
 from .util import diff2HtmlCompare
 
@@ -226,10 +227,12 @@ def analisar_timeline(request):
 
 
 
-def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, nome_branch_forkeado, apagar_branch_merge):
+def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
+	nome_branch_forkeado, apagar_branch_merge, gerar_estatisticas = False):
 	logs_de_execucao = []
 	arquivos_com_conflito = []
 	arquivos_e_trechos = dict()
+	arquivos_e_estatisticas = dict()
 
 	# busca a configuração para o id informado
 	config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
@@ -284,6 +287,8 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, n
 				linhas_conflitantes.append(('todo o arquivo', 'arquivo binário'))
 
 			arquivos_e_trechos[caminho_completo] = linhas_conflitantes
+			if gerar_estatisticas:
+				arquivos_e_estatisticas[caminho_completo] = identificar_estatisticas_de_autores(gr,caminho_completo)
 
 	if houve_conflitos and apagar_branch_merge:
 		gr.git().merge('--abort')
@@ -300,7 +305,7 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, n
 		gr.git().commit('-m "Commit SEM resolver conflitos"')
 		gr.git().checkout('master')
 
-	return (logs_de_execucao, arquivos_e_trechos)
+	return (logs_de_execucao, arquivos_e_trechos, arquivos_e_estatisticas)
 
 
 
@@ -345,10 +350,12 @@ def simular_conflitos(request):
 		if configuracaoferramenta_escolhida and nome_branch_forkeado and nome_branch_origem:
 			logs_de_execucao = None
 			arquivos_e_trechos = None
-			logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
-				nome_branch_forkeado, apagar_branch_merge)
-			logs_de_execucao = logs_e_arquivos[0]
-			arquivos_e_trechos = logs_e_arquivos[1]
+			arquivos_e_estatisticas = None
+			logs_e_arquivos_e_estatisticas = simular_conflitos_do(configuracaoferramenta_escolhida, \
+				nome_branch_origem, nome_branch_forkeado, apagar_branch_merge)
+			logs_de_execucao = logs_e_arquivos_e_estatisticas[0]
+			arquivos_e_trechos = logs_e_arquivos_e_estatisticas[1]
+			arquivos_e_estatisticas = logs_e_arquivos_e_estatisticas[2]
 
 			print(logs_de_execucao)
 
@@ -382,10 +389,12 @@ def simular_conflitos_xls(request, configuracaoferramenta_escolhida, nome_branch
 
 	logs_de_execucao = None
 	arquivos_e_trechos = None
-	logs_e_arquivos = simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
-		nome_branch_forkeado, apagar_branch_merge)
-	logs_de_execucao = logs_e_arquivos[0]
-	arquivos_e_trechos = logs_e_arquivos[1]
+	arquivos_e_estatisticas = None
+	logs_e_arquivos_e_estatisticas = simular_conflitos_do(configuracaoferramenta_escolhida, \
+		nome_branch_origem, nome_branch_forkeado, apagar_branch_merge, True)
+	logs_de_execucao = logs_e_arquivos_e_estatisticas[0]
+	arquivos_e_trechos = logs_e_arquivos_e_estatisticas[1]
+	arquivos_e_estatisticas = logs_e_arquivos_e_estatisticas[2]
 
 	print(logs_de_execucao)
 
@@ -401,7 +410,8 @@ def simular_conflitos_xls(request, configuracaoferramenta_escolhida, nome_branch
 	font_style = xlwt.XFStyle()
 	font_style.font.bold = True
 
-	columns = ['Arquivo', 'Trechos em conflito', ]
+	columns = ['Arquivo', 'Útimo autor', 'Último autor da equipe', \
+		'Maior autor', 'Maior autor da equipe', 'Trechos em conflito',]
 
 	for col_num in range(len(columns)):
 		ws.write(row_num, col_num, columns[col_num], font_style)
@@ -409,11 +419,22 @@ def simular_conflitos_xls(request, configuracaoferramenta_escolhida, nome_branch
 	# Sheet body, remaining rows
 	font_style = xlwt.XFStyle()
 
-	#rows = User.objects.all().values_list('username', 'first_name', 'last_name', 'email')
 	for arquivo, resultado_por_arquivo in arquivos_e_trechos.items():
 		row_num += 1
 		col_num = 0
 		ws.write(row_num, col_num, arquivo, font_style)
+		col_num+=1
+		ws.write(row_num, col_num, arquivos_e_estatisticas[arquivo]['ultimo_autor'],\
+			font_style)
+		col_num+=1
+		ws.write(row_num, col_num, arquivos_e_estatisticas[arquivo]['ultimo_autor_da_equipe'],\
+			font_style)
+		col_num+=1
+		ws.write(row_num, col_num, str(arquivos_e_estatisticas[arquivo]['maior_autor']),\
+			font_style)
+		col_num+=1
+		ws.write(row_num, col_num, str(arquivos_e_estatisticas[arquivo]['maior_autor_da_equipe']),\
+			font_style)					
 		for r in resultado_por_arquivo:
 			col_num+=1
 			ws.write(row_num, col_num, str(r), font_style)

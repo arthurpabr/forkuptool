@@ -4,6 +4,7 @@ import subprocess
 from django.http import JsonResponse
 from configuration.models import ThreadTask
 from execution.utils import ler_conteudo_de_arquivo
+from pydriller import GitRepository 
 
 
 
@@ -70,3 +71,58 @@ def check_thread_task(request,id):
 	except Exception as e:
 		pass
 	return JsonResponse({'is_done':is_done})
+
+
+
+def identificar_estatisticas_de_autores(gr, arquivo):
+	equipe_dev = ['Wellington Openheimer Ribeiro','Robson Vitor Mendonça',\
+		'Ricardo José de Araújo', 'Ricardo Jose Araujo', 'Ricardo Araujo',\
+		'Paulo Humberto Rezende', 'Mauro Augusto Soares Rodrigues',\
+		'Matheus Costa', 'Leonardo Aparecido Ciscon','Geovani Lopes',\
+		'Arthur Roberto Marcondes']
+
+	estatisticas = dict()
+	estatisticas['ultimo_autor'] = None
+	estatisticas['ultimo_autor_da_equipe'] = None
+	estatisticas['maior_autor'] = None
+	estatisticas['maior_autor_da_equipe'] = None
+
+	autores = dict()
+	autores_da_equipe = dict()
+
+	# obtém a lista de commits que já modificaram o arquivo
+	commits = gr.get_commits_modified_file(arquivo)
+	for c in commits:
+		commit_obj = gr.get_commit(c) 
+		autor_da_vez = commit_obj.author.name.strip()
+		if not estatisticas['ultimo_autor']:
+			estatisticas['ultimo_autor'] = autor_da_vez 
+		if autor_da_vez in autores: 
+			autores[autor_da_vez]+=1 
+		else: 
+			autores[autor_da_vez] = 1 
+		if autor_da_vez in equipe_dev: 
+			if not estatisticas['ultimo_autor_da_equipe']: 
+				estatisticas['ultimo_autor_da_equipe'] = autor_da_vez 
+			if autor_da_vez in autores_da_equipe: 
+				autores_da_equipe[autor_da_vez]+=1 
+			else: 
+				autores_da_equipe[autor_da_vez] = 1
+
+	estatisticas['maior_autor'] = identificar_maior_autor(autores)
+	estatisticas['maior_autor_da_equipe'] = identificar_maior_autor(autores_da_equipe)
+	
+	return estatisticas
+
+
+
+def identificar_maior_autor(autores):
+	maior_autor = None
+	ocorrencias_maior_autor = 0
+	for key, value in autores.items(): 
+		if value > ocorrencias_maior_autor: 
+			ocorrencias_maior_autor = value 
+			maior_autor = key
+
+	return (maior_autor, ocorrencias_maior_autor)
+
