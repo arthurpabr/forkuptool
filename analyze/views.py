@@ -247,11 +247,11 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
 	logs_de_execucao.append('Capturando último hash da branch '+nome_branch_forkeado)
 	gr.git().checkout(nome_branch_forkeado)
 	hash_ultimo_commit_forkeado = gr.get_head().hash[0:7]
-	print(hash_ultimo_commit_forkeado)
+	# print(hash_ultimo_commit_forkeado)
 	logs_de_execucao.append('Capturando último hash da branch '+nome_branch_origem)
 	gr.git().checkout(nome_branch_origem)
 	hash_ultimo_commit_origem = gr.get_head().hash[0:7]
-	print(hash_ultimo_commit_origem)
+	# print(hash_ultimo_commit_origem)
 	gr.git().checkout(nome_branch_forkeado)
 	str_time = str(datetime.timestamp(datetime.now())).split('.')[0]
 	nome_branch_merge = 'merge_origem_'+str(hash_ultimo_commit_origem)
@@ -357,7 +357,7 @@ def simular_conflitos(request):
 			arquivos_e_trechos = logs_e_arquivos_e_estatisticas[1]
 			arquivos_e_estatisticas = logs_e_arquivos_e_estatisticas[2]
 
-			print(logs_de_execucao)
+			# print(logs_de_execucao)
 
 			# definindo o número de colunas para exibição
 			numero_max_colunas = 0
@@ -396,7 +396,7 @@ def simular_conflitos_xls(request, configuracaoferramenta_escolhida, nome_branch
 	arquivos_e_trechos = logs_e_arquivos_e_estatisticas[1]
 	arquivos_e_estatisticas = logs_e_arquivos_e_estatisticas[2]
 
-	print(logs_de_execucao)
+	# print(logs_de_execucao)
 
 	response = HttpResponse(content_type='application/ms-excel')
 	response['Content-Disposition'] = 'attachment; filename="conflitos.xls"'
