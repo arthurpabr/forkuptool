@@ -245,10 +245,12 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
 		logs_de_execucao.append(r)
 	
 	logs_de_execucao.append('Capturando último hash da branch '+nome_branch_forkeado)
+	print(('Capturando último hash da branch {}').format(nome_branch_forkeado))
 	gr.git().checkout(nome_branch_forkeado)
 	hash_ultimo_commit_forkeado = gr.get_head().hash[0:7]
 	# print(hash_ultimo_commit_forkeado)
 	logs_de_execucao.append('Capturando último hash da branch '+nome_branch_origem)
+	print(('Capturando último hash da branch {}').format(nome_branch_origem))
 	gr.git().checkout(nome_branch_origem)
 	hash_ultimo_commit_origem = gr.get_head().hash[0:7]
 	# print(hash_ultimo_commit_origem)
@@ -258,10 +260,12 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
 	nome_branch_merge+= '_forkeado_'+str(hash_ultimo_commit_forkeado)
 	nome_branch_merge+= '_t'+str_time
 	logs_de_execucao.append('Criando branch de merge: '+nome_branch_merge)
+	print(('Criando branch de merge: {}').format(nome_branch_merge))
 	gr.git().branch(nome_branch_merge)
 	gr.git().checkout(nome_branch_merge)
 
 	logs_de_execucao.append('Fazendo o merge')
+	print('Fazendo o merge')
 	houve_conflitos = False
 	try:
 		# tenta fazer o merge; se executar sem erros é porque não houve conflito
@@ -294,6 +298,7 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
 		gr.git().merge('--abort')
 		gr.git().checkout('master')
 		logs_de_execucao.append('Desfazendo o merge')
+		print('Desfazendo o merge')
 		# apaga a branch do merge, fazendo uso de shell script externo
 		shell_result = subprocess.run(["./apagar_branch.sh",nome_branch_merge], stdout=subprocess.PIPE)
 		shell_result_as_string = shell_result.stdout.decode('utf-8')
@@ -301,6 +306,7 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
 			logs_de_execucao.append(r)
 
 	elif houve_conflitos and not apagar_branch_merge:
+		print('Fazendo commit sem resolver conflitos')
 		gr.git().add('.')
 		gr.git().commit('-m "Commit SEM resolver conflitos"')
 		gr.git().checkout('master')
