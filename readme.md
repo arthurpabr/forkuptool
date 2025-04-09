@@ -25,6 +25,10 @@ As demais pastas fazem parte da estrutura do projeto seguindo o padrão Django.
 
 #### Instale as dependências do projeto
 ``` pip install -r requirements.txt ```
+##### Obs.: se houver erro ao instalar as dependências, relacionadas do pacote pygraphviz, executando em ambiente Ubuntu / Debian, será necessário instalar o pacote no ambiente:
+``` sudo apt-get install graphviz graphviz-dev ```
+``` pip install pygraphviz ```
+``` pip install -r requirements.txt ```
 
 #### Crie um usuário para acesso ao sistema (superuser)
 ``` python manage.py createsuperuser ```
