@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'configuration',
     'analyze',
     'execution',
+    'gen_statistics',
     'admin_interface',
     'colorfield',
     'django.contrib.admin',
@@ -85,23 +86,23 @@ WSGI_APPLICATION = 'forkuptool.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'forkuptool',
-        'USER': 'projetolp',
-        'PASSWORD': 'projetolp',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'forkuptool',
+#         'USER': 'projetolp',
+#         'PASSWORD': 'projetolp',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
