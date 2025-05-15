@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% if messages %} 
+	{% for msg, msg_class in messages %}
+		<div class="{{ msg_class }}">{{ msg }}</div>
+	{% endfor %} 
+{% endif %}
+
+<h3>Selecione uma opção: </h3>
+<ul>
+	<li>
+		<a class="btn btn-info btn-mini" href="{% url 'gerar_estatisticas' %}" role="button">Gerar estatísticas</a>
+	</li>
+</ul>
+{% endblock %}
