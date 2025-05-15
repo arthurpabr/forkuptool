@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 
-from pydriller import RepositoryMining, GitRepository
+from pydriller import Repository, Git
 from datetime import datetime
 from binaryornot.check import is_binary 
 
@@ -64,8 +64,8 @@ def info_criacao_client(request):
 			# busca a configuração para o id informado
 			config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
 	
-			repo_vendor = GitRepository(config.path_vendor)
-			repo_client = GitRepository(config.path_auxiliary_files)
+			repo_vendor = Git(config.path_vendor)
+			repo_client = Git(config.path_auxiliary_files)
 			commits_vendor = repo_vendor.get_list_commits()
 			list_hash_vendor = []
 			for c in commits_vendor:
@@ -151,19 +151,19 @@ def analisar_timeline(request):
 
 			# percorre uma vez para povoar os vetores de hash
 			contador = 0 
-			commits = RepositoryMining(url[0], since=data_inicial, to=data_final).traverse_commits() 
+			commits = Repository(url[0], since=data_inicial, to=data_final).traverse_commits() 
 			for commit in commits: 
 				commits_vendor_hash.append(commit.hash) 
 				contador += 1
 
-			commits = RepositoryMining(url[1], since=data_inicial, to=data_final).traverse_commits()
+			commits = Repository(url[1], since=data_inicial, to=data_final).traverse_commits()
 			for commit in commits:
 				commits_aux_hash.append(commit.hash) 
 				contador += 1
 
 			# percorre uma segunda vez povoando os vetores de dados
 			contador = 0 
-			commits = RepositoryMining(url[0], since=data_inicial, to=data_final).traverse_commits() 
+			commits = Repository(url[0], since=data_inicial, to=data_final).traverse_commits() 
 			for commit in commits:
 				if not primeiro_commit_geral:
 					primeiro_commit_geral = commit
@@ -184,7 +184,7 @@ def analisar_timeline(request):
 				commits_vendor.append(dados) 
 				contador += 1
 
-			commits = RepositoryMining(url[1], since=data_inicial, to=data_final).traverse_commits() 
+			commits = Repository(url[1], since=data_inicial, to=data_final).traverse_commits() 
 			for commit in commits:  
 				if commit.hash not in commits_vendor_hash:
 					if not ultimo_commit_client:
@@ -236,7 +236,7 @@ def simular_conflitos_do(configuracaoferramenta_escolhida, nome_branch_origem, \
 
 	# busca a configuração para o id informado
 	config = ConfiguracaoFerramenta.objects.get(pk=configuracaoferramenta_escolhida) 
-	gr = GitRepository(config.path_auxiliary_files)
+	gr = Git(config.path_auxiliary_files)
 
 	# atualiza as duas branches, fazendo uso de shell script externo
 	shell_result = subprocess.run(["./atualizar_branches.sh",nome_branch_origem,nome_branch_forkeado], stdout=subprocess.PIPE)
@@ -495,8 +495,8 @@ def comparar_repositorios_task(task_id, configuracaogeral_escolhida):
 	- itera sobre o objeto vendor
 	- para cada item de vendor:
 	"""
-	git_vendor = GitRepository(configuracaogeral.path_repositorio_vendor)
-	git_client = GitRepository(configuracaogeral.path_repositorio_client)
+	git_vendor = Git(configuracaogeral.path_repositorio_vendor)
+	git_client = Git(configuracaogeral.path_repositorio_client)
 	files_in_vendor = git_vendor.files()
 
 	# para debug
@@ -719,9 +719,9 @@ def visualizar_analise_diferencas(request, id):
 
 def visualizar_diff_entre_arquivos(request, id):
 	arquivos_comparados = ArquivosComparados.objects.get(pk=id)
-	outputpath = diff2HtmlCompare.generateDiff2Html(arquivos_comparados.comparacao.path_repositorio_vendor+ \
-		arquivos_comparados.arquivo_vendor.caminho_completo, \
-		arquivos_comparados.comparacao.path_repositorio_client+arquivos_comparados.arquivo_client.caminho_completo)
+	file1 = arquivos_comparados.comparacao.path_repositorio_vendor+arquivos_comparados.arquivo_vendor.caminho_completo
+	file2 = arquivos_comparados.comparacao.path_repositorio_client+arquivos_comparados.arquivo_client.caminho_completo
+	outputpath = diff2HtmlCompare.generateDiff2Html(file1, file2)
 
 	#diff2HtmlCompare.showDiff(outputpath)
 	#return redirect('visualizar_comparacao_repositorios', id=arquivos_comparados.comparacao.id)

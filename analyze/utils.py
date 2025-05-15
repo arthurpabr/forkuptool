@@ -4,7 +4,7 @@ import subprocess
 from django.http import JsonResponse
 from configuration.models import ThreadTask
 from execution.utils import ler_conteudo_de_arquivo
-from pydriller import GitRepository 
+from pydriller import Git 
 
 
 
