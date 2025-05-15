@@ -15,10 +15,10 @@ class ThreadTask(models.Model):
 
 class ConfiguracaoGeral(models.Model):
 	descricao = models.CharField(u'Descrição', null=False, blank=False, unique=True, max_length=150)
-	descricao_vendor = models.CharField(u'Descrição do repositório fornecedor', null=False, blank=False, max_length=150, default='')
-	descricao_client = models.CharField(u'Descrição do repositório cliente', null=False, blank=False, max_length=150, default='')
-	path_repositorio_vendor = models.CharField(u'Caminho completo do repositório fornecedor', null=False, blank=False, max_length=150)
-	path_repositorio_client = models.CharField(u'Caminho completo do repositório cliente', null=False, blank=False, max_length=150)
+	descricao_vendor = models.CharField(u'Descrição do repositório mergeado ', null=False, blank=False, max_length=150, default='')
+	descricao_client = models.CharField(u'Descrição do repositório de produção', null=False, blank=False, max_length=150, default='')
+	path_repositorio_vendor = models.CharField(u'Caminho completo do repositório mergeado', null=False, blank=False, max_length=150)
+	path_repositorio_client = models.CharField(u'Caminho completo do repositório de produção', null=False, blank=False, max_length=150)
 
 	class Meta:
 		verbose_name = u'Configuração para comparação de projetos'

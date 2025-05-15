@@ -1,6 +1,6 @@
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-	url(r'^modulo_configuration/', views.index, name='modulo_configuration'),
+	path('modulo_configuration/', views.index, name='modulo_configuration'),
 ]

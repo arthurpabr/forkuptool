@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import path
 from . import views
 
 urlpatterns = [
-	url(r'^modulo_execution/', views.index, name='modulo_execution'),
-	url(r'^executar_ferramenta/', views.executar_ferramenta, name='executar_ferramenta'),
+	path('modulo_execution/', views.index, name='modulo_execution'),
+	path('executar_ferramenta/', views.executar_ferramenta, name='executar_ferramenta'),
 ]
