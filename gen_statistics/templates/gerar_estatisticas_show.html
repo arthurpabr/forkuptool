@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Estatísticas de Modificação entre Repositórios</h2>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Arquivos Modificados por Aplicação</h4>
+        </div>
+        <div class="card-body">
+            <img src="data:image/png;base64,{{ graphic1 }}" class="img-fluid" alt="Arquivos Modificados">
+        </div>
+    </div>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Volume de Modificações por Aplicação</h4>
+        </div>
+        <div class="card-body">
+            <img src="data:image/png;base64,{{ graphic2 }}" class="img-fluid" alt="Volume de Modificações">
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h4>Dados Detalhados</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Aplicação</th>
+                            <th>Arquivos Modificados</th>
+                            <th>Total Linhas</th>
+                            <th>Linhas Alteradas</th>
+                            <th>Linhas Adicionadas</th>
+                            <th>Linhas Removidas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in tabela_dados %}
+                        <tr>
+                            <td>{{ item.app }}</td>
+                            <td>{{ item.mod_files }}</td>
+                            <td>{{ item.total }}</td>
+                            <td>{{ item.changed }}</td>
+                            <td>{{ item.added }}</td>
+                            <td>{{ item.deleted }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-info">
+                            <th>TOTAL</th>
+                            <th>{{ totais.arquivos }}</th>
+                            <th>{{ totais.linhas }}</th>
+                            <th>{{ totais.alteradas }}</th>
+                            <th>{{ totais.adicionadas }}</th>
+                            <th>{{ totais.removidas }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

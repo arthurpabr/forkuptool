@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Top 10 Apps Mais Modificados</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Distribuição de Modificações</h4>
+                </div>
+                <div class="card-body text-center">
+                    <img src="data:image/png;base64,{{ graphic1 }}" class="img-fluid" 
+                         style="max-height: 500px;" alt="Modificações por App">
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h4>Distribuição de Linhas Modificadas</h4>
+                </div>
+                <div class="card-body text-center">
+                    <img src="data:image/png;base64,{{ graphic2 }}" class="img-fluid" 
+                         style="max-height: 500px;" alt="Linhas Modificadas">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h4>Detalhes dos Top 10 Apps</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Aplicação</th>
+                            <th>Modificações</th>
+                            <th>% do Total</th>
+                            <th>Linhas Modificadas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in tabela_dados %}
+                        <tr>
+                            <td>{{ item.posicao }}</td>
+                            <td><strong>{{ item.app }}</strong></td>
+                            <td>{{ item.modificacoes }}</td>
+                            <td>{{ item.percentual_mod }}</td>
+                            <td>{{ item.percentual_linhas }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-secondary">
+                        <tr>
+                            <th colspan="2">TOTAL</th>
+                            <th>{{ total_modificacoes }}</th>
+                            <th>100%</th>
+                            <th>{{ total_linhas }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -7,4 +7,4 @@ class GerarEstatisticasForm(forms.Form):
 		self.fields['configuracao_escolhida'].choices = configuracao_choices
 
 	configuracao_escolhida = forms.ChoiceField(label='Escolha uma configuração', label_suffix=': ', \
-		required=True, choices=(), widget=forms.Select(attrs={'style':'width: 500px;'}))
+		required=True, choices=(), widget=forms.Select(attrs={'style':'width: 800px;'}))
