@@ -2,7 +2,8 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h2 class="mb-4">Top 10 Apps Mais Modificados</h2>
+    <h2 class="mb-4">Top 15 Apps Mais Modificados</h2>
+    <h4 class="mb-4">Com relação ao total de modificações</h4>
     
     <div class="row">
         <div class="col-md-6">
@@ -32,7 +33,7 @@
 
     <div class="card">
         <div class="card-header bg-dark text-white">
-            <h4>Detalhes dos Top 10 Apps</h4>
+            <h4>Detalhes dos Top 15 Apps</h4>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -69,5 +70,66 @@
             </div>
         </div>
     </div>
+
+    <br>
+    <br>
+
+    <h2 class="mb-4">Top 15 Apps Mais Modificados</h2>
+    <h4 class="mb-4">Com relação ao seu próprio tamanho</h4>
+    
+    <!-- Gráfico 3: % de Impacto -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4>Top 15 Apps por Impacto Relativo</h4>
+        </div>
+        <div class="card-body">
+            <img src="data:image/png;base64,{{ graphic3 }}" class="img-fluid">
+        </div>
+    </div>
+
+    <!-- Gráfico 4: Comparação Absoluto vs Relativo -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h4>Relação: Modificações Absolutas vs Impacto Relativo</h4>
+        </div>
+        <div class="card-body">
+            <img src="data:image/png;base64,{{ graphic4 }}" class="img-fluid">
+            <div class="mt-2 text-center">
+                <small class="text-muted">Tamanho e cor indicam % de impacto relativo</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h4>Detalhes por Aplicação</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>App</th>
+                        <th>Tamanho Total (Linhas)</th>
+                        <th>Linhas Modificadas</th>
+                        <th>% de Impacto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in tabela_dados2 %}
+                    <tr style="background-color: rgba(0, 123, 255, {{ item.impacto_normalizado|default:0.1 }});">
+                        <td>{{ item.posicao }}</td>
+                        <td><strong>{{ item.app }}</strong></td>
+                        <td>{{ item.linhas_totais }}</td>
+                        <td>{{ item.linhas_modificadas }}</td>
+                        <td class="fw-bold">{{ item.percentual_impacto }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

@@ -127,18 +127,10 @@ def gerar_estatisticas(request):
 								estatisticas_1_para_2[app_name][file_relative_name]['num_linhas_alteradas'] = estatisticas_diff.get('modificadas')
 
 			dados = estatisticas_1_para_2
-			# estatisticas_show = gerar_estatisticas_show(dados)
 			estatisticas_show = gerar_estatisticas_pie_show(dados)
+			estatisticas_impacto_show = gerar_estatisticas_impacto_show(dados)
 
 			subtitle = 'Resultados de execução'
-
-			# return render(request, 'gerar_estatisticas_show.html', {
-			# 	'graphic1': estatisticas_show.get('graphic1'),
-			# 	'graphic2': estatisticas_show.get('graphic2'),
-			# 	'tabela_dados': estatisticas_show.get('tabela_dados'),
-			# 	'totais': estatisticas_show.get('totais'),
-			# 	'apps': estatisticas_show.get('apps'),
-			# })
 
 			return render(request, 'gerar_estatisticas_pie_show.html', {
 				'graphic1': estatisticas_show.get('graphic1'),
@@ -146,6 +138,9 @@ def gerar_estatisticas(request):
 				'tabela_dados': estatisticas_show.get('tabela_dados'),
 				'total_modificacoes': estatisticas_show.get('total_modificacoes'),
 				'total_linhas': estatisticas_show.get('total_linhas'),
+				'graphic3': estatisticas_impacto_show.get('graphic1'),
+        		'graphic4': estatisticas_impacto_show.get('graphic2'),
+        		'tabela_dados2': estatisticas_impacto_show.get('tabela_dados'),
 			})
 
 		else:
@@ -163,99 +158,93 @@ def gerar_estatisticas(request):
 			# ANOTHER_FILE_PATH = configuracao_obj.path_repositorio_client
 
 
-def gerar_estatisticas_show(dados):
+def gerar_estatisticas_impacto_show(dados):
+	# Processamento: calcular % de modificação por app
+	apps_stats = {}
+	for app, arquivos in dados.items():
+		linhas_modificadas = 0
+		linhas_totais = 0
 
-	# Processamento dos dados
-	apps = []
-	modified_files_count = []
-	total_lines = []
-	changed_lines = []
-	added_lines = []
-	deleted_lines = []
-    
-	for app, files in dados.items():
-		apps.append(app)
-		modified_files = sum(1 for f in files.values() if f.get('alterado') or f.get('excluido'))
-		total_lines_app = sum(f['num_linhas'] for f in files.values() if not f.get('excluido'))
+		for arquivo, stats in arquivos.items():
+			linhas_modificadas += (
+				stats.get('num_linhas_incluidas', 0) +
+				stats.get('num_linhas_excluidas', 0) +
+				stats.get('num_linhas_alteradas', 0)
+			)
+			linhas_totais += stats.get('num_linhas', 0)
 
-		modified_files_count.append(modified_files)
-		total_lines.append(total_lines_app)
-		changed_lines.append(sum(f.get('num_linhas_alteradas', 0) for f in files.values()))
-		added_lines.append(sum(f.get('num_linhas_incluidas', 0) for f in files.values()))
-		deleted_lines.append(sum(f.get('num_linhas_excluidas', 0) for f in files.values()))
+		# Novo cálculo: % de modificação em relação ao tamanho do app
+		percentual_impacto = (linhas_modificadas / linhas_totais * 100) if linhas_totais > 0 else 0
 
-	# Configuração do estilo
-	sns.set(style="whitegrid")
-    
-	# Gráfico 1: Arquivos modificados
+		apps_stats[app] = {
+			'linhas_modificadas': linhas_modificadas,
+			'linhas_totais': linhas_totais,
+			'percentual_impacto': percentual_impacto
+		}
+
+	# Ordenar apps por % de impacto (top 15)
+	top_apps = sorted(apps_stats.items(), key=lambda x: x[1]['percentual_impacto'], reverse=True)[:15]
+
+	# Dados para gráficos
+	labels = [app[0] for app in top_apps]
+	percentuais = [app[1]['percentual_impacto'] for app in top_apps]
+	linhas_mod = [app[1]['linhas_modificadas'] for app in top_apps]
+
+	# Gráfico 1: % de Impacto por App (Barras Horizontais)
 	plt.figure(figsize=(10, 6))
-	sns.barplot(x=modified_files_count, y=apps, palette="Blues_d")
-	plt.title('Arquivos Modificados por App')
-	plt.xlabel('Quantidade de Arquivos')
-	plt.ylabel('Aplicações')
-    
-	# Converter para HTML
+	sns.barplot(x=percentuais, y=labels, palette="viridis")
+	plt.title('Top 15 Apps por % de Modificação (Impacto Relativo)')
+	plt.xlabel('% do App Modificado')
+	plt.ylabel('Aplicação')
+
 	buffer1 = BytesIO()
 	plt.savefig(buffer1, format='png', bbox_inches='tight')
 	plt.close()
 	graphic1 = base64.b64encode(buffer1.getvalue()).decode('utf-8')
-    
-	# Gráfico 2: Volume de modificações
-	plt.figure(figsize=(10, 8))
-	bar_width = 0.2
-	index = np.arange(len(apps))
-    
-	plt.barh(index - bar_width, total_lines, bar_width, label='Total de Linhas', color='#3498db')
-	plt.barh(index, changed_lines, bar_width, label='Linhas Alteradas', color='#f39c12')
-	plt.barh(index + bar_width, added_lines, bar_width, label='Linhas Adicionadas', color='#2ecc71')
-	plt.barh(index + 2*bar_width, deleted_lines, bar_width, label='Linhas Removidas', color='#e74c3c')
-    
-	plt.title('Volume de Modificações por App')
-	plt.xlabel('Quantidade de Linhas')
-	plt.ylabel('Aplicações')
-	plt.yticks(index, apps)
-	plt.legend()
-    
-	# Converter para HTML
+
+	# Gráfico 2: Comparação Modificações Absolutas x Impacto Relativo (Scatter Plot)
+	plt.figure(figsize=(10, 6))
+	plt.scatter(
+		x=[app[1]['linhas_modificadas'] for app in top_apps],
+		y=percentuais,
+		s=100,  # Tamanho dos pontos
+		c=percentuais,  # Cor por % de impacto
+		cmap='coolwarm'
+	)
+	plt.title('Relação: Linhas Modificadas (Absoluto) vs % de Impacto (Relativo)')
+	plt.xlabel('Linhas Modificadas (Absoluto)')
+	plt.ylabel('% de Impacto (Relativo)')
+	plt.colorbar(label='% de Impacto')
+
+	# Adicionar rótulos dos apps
+	for i, app in enumerate(labels):
+		plt.annotate(app, (linhas_mod[i], percentuais[i]), textcoords="offset points", xytext=(0,5), ha='center')
+
 	buffer2 = BytesIO()
 	plt.savefig(buffer2, format='png', bbox_inches='tight')
 	plt.close()
 	graphic2 = base64.b64encode(buffer2.getvalue()).decode('utf-8')
-    
-	# Dados para tabela
-	tabela_dados = []
-	for app, mod_files, total, changed, added, deleted in zip(apps, modified_files_count, 
-														total_lines, changed_lines, 
-														added_lines, deleted_lines):
-		tabela_dados.append({
-			'app': app,
-			'mod_files': mod_files,
-			'total': total,
-			'changed': changed,
-			'added': added,
-			'deleted': deleted
-		})
 
-	# Calcular totais manualmente
-	totais = {
-		'arquivos': sum(modified_files_count),
-		'linhas': sum(total_lines),
-		'alteradas': sum(changed_lines),
-		'adicionadas': sum(added_lines),
-		'removidas': sum(deleted_lines)
-	}    
+	# Tabela de dados
+	tabela_dados = []
+	for i, (app, stats) in enumerate(top_apps, 1):
+		tabela_dados.append({
+			'posicao': i,
+			'app': app,
+			'linhas_totais': stats['linhas_totais'],
+			'linhas_modificadas': stats['linhas_modificadas'],
+			'percentual_impacto': f"{stats['percentual_impacto']:.1f}%",
+			'impacto_normalizado': stats['percentual_impacto'] / 100  # Para uso em estilização
+		})
 
 	return {
         'graphic1': graphic1,
         'graphic2': graphic2,
         'tabela_dados': tabela_dados,
-        'totais': totais,
-        'apps': apps,
     }
 
 
 def gerar_estatisticas_pie_show(dados):
-
 	# Processar os dados para calcular totais por app
 	apps_stats = {}
 	for app, arquivos in dados.items():
@@ -281,10 +270,10 @@ def gerar_estatisticas_pie_show(dados):
 		}
 
 
-	# Ordenar apps por modificações (top 10)
+	# Ordenar apps por modificações (top 15)
 	top_apps = sorted(apps_stats.items(), 
 					key=lambda x: x[1]['modificacoes'], 
-					reverse=True)[:10]
+					reverse=True)[:15]
 
 	# Preparar dados para gráficos
 	labels = [app[0] for app in top_apps]
@@ -300,7 +289,7 @@ def gerar_estatisticas_pie_show(dados):
 		startangle=90, 
 		colors=sns.color_palette('pastel')
 	)
-	plt.title('Top 10 Apps por Número de Modificações')
+	plt.title('Top 15 Apps por Número de Modificações')
 
 	buffer1 = BytesIO()
 	plt.savefig(buffer1, format='png', bbox_inches='tight')
@@ -316,7 +305,7 @@ def gerar_estatisticas_pie_show(dados):
 		startangle=90, 
 		colors=sns.color_palette('Set2')
 	)
-	plt.title('Top 10 Apps por Linhas Modificadas')
+	plt.title('Top 15 Apps por Linhas Modificadas')
 
 	buffer2 = BytesIO()
 	plt.savefig(buffer2, format='png', bbox_inches='tight')
